@@ -62,8 +62,7 @@ Vagrant.configure("2") do |config|
       ]
 		end
 	end
-end
-=begin	
+	
 	config.vm.define "jenkinsSlave" do |jenkinsSlave|
 		jenkinsSlave.vm.hostname = "jenkinsSlave"
 		jenkinsSlave.vm.synced_folder ".", "/vagrant", disabled: true
@@ -78,7 +77,9 @@ end
 						]
 		end
 	end
+end
 
+=begin
 	config.vm.define "nexusServer" do |nexus|
 		nexus.vm.hostname = "nexus"
 		nexus.vm.synced_folder ".", "/vagrant", disabled: true
