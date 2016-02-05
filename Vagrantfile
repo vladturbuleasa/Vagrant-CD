@@ -35,6 +35,15 @@ yum -y install jenkins java-1.8.0-openjdk
 yum -y install jenkins
 
 #Installing plugins on jenkins
+mkdir -p /var/lib/jenkins/plugins/
+wget -O /var/lib/jenkins/plugins/scm-api.hpi https://updates.jenkins-ci.org/download/plugins/scm-api/latest/scm-api.hpi
+wget -O /var/lib/jenkins/plugins/git-client.hpi https://updates.jenkins-ci.org/download/plugins/git-client/1.11.1/git-client.hpi
+wget -O /var/lib/jenkins/plugins/git.hpi https://updates.jenkins-ci.org/download/plugins/git/2.3/git.hpi
+wget -O /var/lib/jenkins/plugins/ws-cleanup.hpi https://updates.jenkins-ci.org/download/plugins/ws-cleanup/0.24/ws-cleanup.hpi
+wget -O /var/lib/jenkins/plugins/token-macro.hpi https://updates.jenkins-ci.org/download/plugins/token-macro/1.10/token-macro.hpi
+wget -O /var/lib/jenkins/plugins/config-file-provider.hpi http://mirrors.xmission.com/hudson/plugins/config-file-provider/2.7.5/config-file-provider.hpi
+sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins/
+
 #setting up Jenkins as a service&start it
 sudo /etc/init.d/jenkins restart
 systemctl restart jenkins.service
@@ -43,7 +52,7 @@ SCRIPT
 
 #Provisioning the VM's
 Vagrant.configure("2") do |config|
-    #Version of OS
+  #Version of OS
 	config.vm.box = "centos/7"
 	
 	config.vm.define "jenkinsMaster" do |jenkinsMaster|
@@ -58,10 +67,10 @@ Vagrant.configure("2") do |config|
 		jenkinsMaster.vm.network "forwarded_port", guest: 8080, host: 8080
 		jenkinsMaster.vm.provider "virtualbox" do |vm|
 			vm.customize [
-							'modifyvm', :id,
-							'--memory', '768'
+        'modifyvm', :id,
+        '--memory', '768'
 							
-						]
+      ]
 		end
 	end
 end
