@@ -12,6 +12,7 @@ $script_tools = <<SCRIPT
 echo "Start installing tools..."
 sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 sudo sysctl -p
+sudo yum -y install net-tools wget zip unzip mc vim git
 sudo yum -y install net-tools wget zip unzip mc vim git java-1.8.0-openjdk
 echo "Done."
 SCRIPT
