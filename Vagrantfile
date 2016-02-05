@@ -12,18 +12,8 @@ $script_tools = <<SCRIPT
 echo "Start installing tools..."
 sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 sudo sysctl -p
-sudo yum -y install net-tools wget zip unzip mc
+sudo yum -y install net-tools wget zip unzip mc vim git
 echo "Done."
-SCRIPT
-
-$script_nginx = <<SCRIPT
-wget http://nginx.org/packages/rhel/7/x86_64/RPMS/nginx-1.8.1-1.el7.ngx.x86_64.rpm
-chown vagrant:vagrant nginx-1.8.1-1.el7.ngx.x86_64.rpm
-chmod 755 nginx-1.8.1-1.el7.ngx.x86_64.rpm
-yum -y install nginx-1.8.1-1.el7.ngx.x86_64.rpm
-systemctl start nginx
-systemctl enable nginx
-sudo rm -rf nginx-1.8.1-1.el7.ngx.x86_64.rpm
 SCRIPT
 
 $script_jenkinsMaster = <<SCRIPT
@@ -59,7 +49,6 @@ Vagrant.configure("2") do |config|
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
     jenkinsMaster.vm.provision :shell, :inline => $script_tools
     jenkinsMaster.vm.provision :shell, :inline => $script_jenkinsMaster
-    jenkinsMaster.vm.provision :shell, :inline => $script_nginx
 		jenkinsMaster.vm.synced_folder ".", "/vagrant", disabled: true
 		jenkinsMaster.vm.network "private_network", ip: "172.16.1.2", virtualbox__intnet: true
 		jenkinsMaster.vm.network "forwarded_port", guest: 22, host: 2022, id: "ssh", auto_correct: true
