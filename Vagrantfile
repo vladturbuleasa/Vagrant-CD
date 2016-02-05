@@ -62,7 +62,80 @@ Vagrant.configure("2") do |config|
 						]
 		end
 	end
-
-
-	
 end
+=begin	
+	config.vm.define "jenkinsSlave" do |jenkinsSlave|
+		jenkinsSlave.vm.hostname = "jenkinsSlave"
+		jenkinsSlave.vm.synced_folder ".", "/vagrant", disabled: true
+		jenkinsSlave.vm.provision :shell, :inline => $install_tools
+		jenkinsSlave.vm.network "private_network", ip: "172.16.1.3", virtualbox__intnet: true
+		jenkinsSlave.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
+		jenkinsSlave.vm.provider "virtualbox" do |vm|
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '768'
+							
+						]
+		end
+	end
+
+	config.vm.define "nexusServer" do |nexus|
+		nexus.vm.hostname = "nexus"
+		nexus.vm.synced_folder ".", "/vagrant", disabled: true
+		nexus.vm.provision :shell, :inline => $install_tools
+		nexus.vm.network "private_network", ip: "172.16.1.4", virtualbox__intnet: true
+		nexus.vm.network "forwarded_port", guest: 22, host: 4022, id: "ssh", auto_correct: true
+		nexus.vm.provider "virtualbox" do |vm|
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '768'
+							
+						]
+		end
+	end	
+	config.vm.define "gitServer" do |gitSrv|
+		gitSrv.vm.hostname = "gitSrv"
+		gitSrv.vm.synced_folder ".", "/vagrant", disabled: true
+		gitSrv.vm.provision :shell, :inline => $install_tools
+		gitSrv.vm.network "private_network", ip: "172.16.1.5", virtualbox__intnet: true
+		gitSrv.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
+		gitSrv.vm.provider "virtualbox" do |vm|
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '768'
+							
+						]
+		end
+	end	
+	
+	config.vm.define "chefServer" do |chef|
+		chef.vm.hostname = "chef"
+		chef.vm.synced_folder ".", "/vagrant", disabled: true
+		chef.vm.provision :shell, :inline => $install_tools
+		chef.vm.network "private_network", ip: "172.16.1.6", virtualbox__intnet: true
+		chef.vm.network "forwarded_port", guest: 22, host: 6022, id: "ssh", auto_correct: true
+		chef.vm.provider "virtualbox" do |vm|
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '768'
+							
+						]
+		end
+	end
+	
+	config.vm.define "Docker" do |docker|
+		docker.vm.hostname = "docker"
+		docker.vm.synced_folder ".", "/vagrant", disabled: true
+		docker.vm.provision :shell, :inline => $install_tools
+		docker.vm.network "private_network", ip: "172.16.1.7", virtualbox__intnet: true
+		docker.vm.network "forwarded_port", guest: 22, host: 7022, id: "ssh", auto_correct: true
+		docker.vm.provider "virtualbox" do |vm|
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '768'
+							
+						]
+		end
+	end
+	
+=end
