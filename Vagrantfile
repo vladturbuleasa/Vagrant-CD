@@ -1,14 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-$updateCOS7 = <<SCRIPT
+$script_updateCOS7 = <<SCRIPT
 echo Updating the VM...
 yum -y clean all
 yum -y update
 echo Done.
 SCRIPT
 
-$install_tools = <<SCRIPT
+$script_tools = <<SCRIPT
 echo "Start installing tools..."
 sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 sudo sysctl -p
@@ -16,7 +16,7 @@ sudo yum -y install net-tools wget zip unzip mc
 echo "Done."
 SCRIPT
 
-$install_nginx = <<SCRIPT
+$script_nginx = <<SCRIPT
 wget http://nginx.org/packages/rhel/7/x86_64/RPMS/nginx-1.8.1-1.el7.ngx.x86_64.rpm
 chown vagrant:vagrant nginx-1.8.1-1.el7.ngx.x86_64.rpm
 chmod 755 nginx-1.8.1-1.el7.ngx.x86_64.rpm
@@ -26,7 +26,7 @@ systemctl enable nginx
 sudo rm -rf nginx-1.8.1-1.el7.ngx.x86_64.rpm
 SCRIPT
 
-$install_jenkinsMaster = <<SCRIPT
+$script_jenkinsMaster = <<SCRIPT
 
 #Installing jenkins and java openjdk
 wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
@@ -48,9 +48,9 @@ Vagrant.configure("2") do |config|
 	
 	config.vm.define "jenkinsMaster" do |jenkinsMaster|
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
-    jenkinsMaster.vm.provision :shell, :inline => $install_tools
-    jenkinsMaster.vm.provision :shell, :inline => $install_jenkinsMaster
-    jenkinsMaster.vm.provision :shell, :inline => $install_nginx
+    jenkinsMaster.vm.provision :shell, :inline => $script_tools
+    jenkinsMaster.vm.provision :shell, :inline => $script_jenkinsMaster
+    jenkinsMaster.vm.provision :shell, :inline => $script_nginx
 		jenkinsMaster.vm.synced_folder ".", "/vagrant", disabled: true
 		jenkinsMaster.vm.network "private_network", ip: "172.16.1.2", virtualbox__intnet: true
 		jenkinsMaster.vm.network "forwarded_port", guest: 22, host: 2022, id: "ssh", auto_correct: true
