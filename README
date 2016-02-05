@@ -1,3 +1,12 @@
-== Graduates
+# Graduates
 
-You should document your project here.
+
+What's done here:
+
+1. Start 6 VM using the Virtualbox and vagrant
+2. Install Jenkins master and 1 slave
+3. Install git on a VM
+4. Install nexus sonatype on a VM
+5. Install Chef server + 1 node
+6. Install Docker
+7. Install shadow
