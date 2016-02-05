@@ -48,8 +48,10 @@ Vagrant.configure("2") do |config|
 	
 	config.vm.define "jenkinsMaster" do |jenkinsMaster|
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
+    jenkinsMaster.vm.provision :shell, :inline => $install_tools
+    jenkinsMaster.vm.provision :shell, :inline => $install_jenkinsMaster
+    jenkinsMaster.vm.provision :shell, :inline => $install_nginx
 		jenkinsMaster.vm.synced_folder ".", "/vagrant", disabled: true
-		jenkinsMaster.vm.provision :shell, :inline => $install_tools
 		jenkinsMaster.vm.network "private_network", ip: "172.16.1.2", virtualbox__intnet: true
 		jenkinsMaster.vm.network "forwarded_port", guest: 22, host: 2022, id: "ssh", auto_correct: true
 		jenkinsMaster.vm.network "forwarded_port", guest: 80, host: 8181
