@@ -72,6 +72,7 @@ Vagrant.configure("2") do |config|
 	config.vm.define "jenkinsSlave" do |jenkinsSlave|
 		jenkinsSlave.vm.hostname = "jenkinsSlave"
 		jenkinsSlave.vm.provision :shell, :inline => $script_tools
+    jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
     jenkinsSlave.vm.synced_folder ".", "/vagrant", disabled: true
 		jenkinsSlave.vm.network "private_network", ip: "172.16.1.3", virtualbox__intnet: true
 		jenkinsSlave.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
