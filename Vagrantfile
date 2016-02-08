@@ -1,29 +1,30 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-$script_updateCOS7 = <<SCRIPT
-echo Updating the VM...
-yum -y clean all
-yum -y update
-echo Done.
-SCRIPT
-
 $script_tools = <<SCRIPT
 echo "Start installing tools..."
+#sudo rm -f /var/lib/rpm/__*
+#sudo rpm --rebuilddb -v -v
 sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 sudo sysctl -p
 sudo yum -y install net-tools wget zip unzip mc vim git
-sudo yum -y install net-tools wget zip unzip mc vim git java-1.8.0-openjdk
+echo "Install oracle jdk..."
+#Install Oracle JDK
+wget --no-cookies \
+--no-check-certificate \
+--header "Cookie: oraclelicense=accept-securebackup-cookie" \
+"http://download.oracle.com/otn-pub/java/jdk/8u74-b02/jdk-8u74-linux-x64.rpm" \
+-O jdk-8u74-linux-x64.rpm
+yum -y install jdk-8u74-linux-x64.rpm
 echo "Done."
 SCRIPT
 
 $script_jenkinsMaster = <<SCRIPT
-
 #Installing jenkins and java openjdk
 wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
 rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
+yum -y update
 yum -y install jenkins
-
 #Installing plugins on jenkins
 mkdir -p /var/lib/jenkins/plugins/
 wget -O /var/lib/jenkins/plugins/scm-api.hpi https://updates.jenkins-ci.org/download/plugins/scm-api/latest/scm-api.hpi
@@ -34,10 +35,9 @@ wget -O /var/lib/jenkins/plugins/token-macro.hpi https://updates.jenkins-ci.org/
 wget -O /var/lib/jenkins/plugins/config-file-provider.hpi http://mirrors.xmission.com/hudson/plugins/config-file-provider/2.7.5/config-file-provider.hpi
 wget -O /var/lib/jenkins/plugins/swarm.hpi https://updates.jenkins-ci.org/latest/swarm.hpi
 sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins/
-
 #setting up Jenkins as a service&start it
-sudo /etc/init.d/jenkins restart
-systemctl restart jenkins.service
+chkconfig jenkins on
+service jenkins restart
 SCRIPT
 
 $script_jenkinsSlave = <<SCRIPT
@@ -48,10 +48,19 @@ wget -O /var/lib/jenkins/slave-agent/swarm-client-2.0-jar-with-dependencies.jar 
 nohup java -jar swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/log/jenkins/jenkins.log 2>&1 &
 SCRIPT
 
+$script_nexusInstall = <<SCRIPT
+wget -O /var/lib/nexus-2.12.0-01-bundle.tar.gz http://download.sonatype.com/nexus/oss/nexus-2.12.0-01-bundle.tar.gz
+cd /var/lib/;tar xvzf nexus-2.12.0-01-bundle.tar.gz
+mv nexus-2.12.0-01 nexus
+cd nexus;chmod -R a+x bin
+sudo adduser nexus
+sudo rm -rf nexus-*.tar.gz
+SCRIPT
+
 #Provisioning the VM's
 Vagrant.configure("2") do |config|
   #Version of OS
-	config.vm.box = "centos/7"
+	config.vm.box = "nrel/CentOS-6.7-x86_64"
 	
 	config.vm.define "jenkinsMaster" do |jenkinsMaster|
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
@@ -72,11 +81,12 @@ Vagrant.configure("2") do |config|
 	
 	config.vm.define "jenkinsSlave" do |jenkinsSlave|
 		jenkinsSlave.vm.hostname = "jenkinsSlave"
+		jenkinsSlave.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		jenkinsSlave.vm.provision :shell, :inline => $script_tools
-    jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
-    jenkinsSlave.vm.synced_folder ".", "/vagrant", disabled: true
+		jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
 		jenkinsSlave.vm.network "private_network", ip: "172.16.1.3", virtualbox__intnet: true
 		jenkinsSlave.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
+		
 		jenkinsSlave.vm.provider "virtualbox" do |vm|
 			vm.customize [
 							'modifyvm', :id,
@@ -85,24 +95,25 @@ Vagrant.configure("2") do |config|
 						]
 		end
 	end
-  
-end
 
-=begin
-	config.vm.define "nexusServer" do |nexus|
-		nexus.vm.hostname = "nexus"
-		nexus.vm.synced_folder ".", "/vagrant", disabled: true
-		nexus.vm.provision :shell, :inline => $install_tools
-		nexus.vm.network "private_network", ip: "172.16.1.4", virtualbox__intnet: true
-		nexus.vm.network "forwarded_port", guest: 22, host: 4022, id: "ssh", auto_correct: true
-		nexus.vm.provider "virtualbox" do |vm|
+	config.vm.define "toolsVM" do |toolsVM|
+		toolsVM.vm.hostname = "nexus"
+    toolsVM.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
+		toolsVM.vm.provision :shell, :inline => $script_tools
+    toolsVM.vm.provision :shell, :inline => $script_nexusInstall
+		toolsVM.vm.network "private_network", ip: "172.16.1.4", virtualbox__intnet: true
+		toolsVM.vm.network "forwarded_port", guest: 22, host: 4022, id: "ssh", auto_correct: true
+		toolsVM.vm.provider "virtualbox" do |vm|
 			vm.customize [
 							'modifyvm', :id,
-							'--memory', '768'
+							'--memory', '1024'
 							
 						]
 		end
 	end	
+  
+end
+=begin  
 	config.vm.define "gitServer" do |gitSrv|
 		gitSrv.vm.hostname = "gitSrv"
 		gitSrv.vm.synced_folder ".", "/vagrant", disabled: true
@@ -116,8 +127,10 @@ end
 							
 						]
 		end
-	end	
-	
+	end
+  
+end
+
 	config.vm.define "chefServer" do |chef|
 		chef.vm.hostname = "chef"
 		chef.vm.synced_folder ".", "/vagrant", disabled: true
