@@ -16,6 +16,7 @@ wget -nv \
 "http://download.oracle.com/otn-pub/java/jdk/8u74-b02/jdk-8u74-linux-x64.rpm" \
 -O jdk-8u74-linux-x64.rpm
 yum -y install jdk-8u74-linux-x64.rpm
+\rm -rf jdk-8u74-linux-x64.rpm
 echo "Done."
 SCRIPT
 
@@ -44,13 +45,15 @@ SCRIPT
 
 $script_jenkinsSlave = <<SCRIPT
 echo "Installing JenkinsSlave..."
-mkdir -p /var/lib/jenkins/slave-agent
-mkdir -p /var/log/jenkins/
-cd /var/lib/jenkins/slave-agent/
-wget -nv -O /var/lib/jenkins/slave-agent/swarm-client-2.0-jar-with-dependencies.jar wget http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/2.0/swarm-client-2.0-jar-with-dependencies.jar
-nohup java -jar swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/log/jenkins/jenkins.log 2>&1 &
+mkdir -p /var/lib/jenkins/
+cd /var/lib/jenkins
+touch /var/lib/jenkins/jenkins.log
+wget -nv -O /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/2.0/swarm-client-2.0-jar-with-dependencies.jar
+echo 'nohup java -jar /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/lib/jenkins/jenkins.log 2>&1 &' >> /etc/rc.local
+nohup java -jar /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/lib/jenkins/jenkins.log 2>&1 &
 iptables -P INPUT ACCEPT
 iptables -P OUTPUT ACCEPT
+echo "Installing JenkinsSlave Done..."
 SCRIPT
 
 $script_nexusInstall = <<SCRIPT
@@ -100,6 +103,7 @@ Vagrant.configure("2") do |config|
 		jenkinsMaster.vm.network "forwarded_port", guest: 22, host: 2022, id: "ssh", auto_correct: true
 		jenkinsMaster.vm.network "forwarded_port", guest: 8080, host: 8080
 		jenkinsMaster.vm.provider "virtualbox" do |vm|
+      vm.name = "JenkinsMaster"
 			vm.customize [
         'modifyvm', :id,
         '--memory', '768'
@@ -115,11 +119,11 @@ Vagrant.configure("2") do |config|
 		jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
 		jenkinsSlave.vm.network "private_network", ip: "172.16.1.3", virtualbox__intnet: true
 		jenkinsSlave.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
-		
 		jenkinsSlave.vm.provider "virtualbox" do |vm|
+      vm.name = "JenkinsSlave"
 			vm.customize [
 							'modifyvm', :id,
-							'--memory', '768'
+							'--memory', '512'
 							
 						]
 		end
@@ -136,6 +140,7 @@ Vagrant.configure("2") do |config|
     toolsVM.vm.network "forwarded_port", guest: 8081, host: 8081, id: "Nexus"
     toolsVM.vm.network "forwarded_port", guest: 80, host: 8181, id: "gitlabweb"
 		toolsVM.vm.provider "virtualbox" do |vm|
+      vm.name = "toolsVM"
 			vm.customize [
 							'modifyvm', :id,
 							'--memory', '1536'
@@ -143,5 +148,20 @@ Vagrant.configure("2") do |config|
 						]
 		end
 	end
-	
+  
+  config.vm.define "aplication1" do |aplication1|
+		aplication1.vm.hostname = "aplication1"
+		aplication1.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
+		aplication1.vm.network "private_network", ip: "172.16.1.5", virtualbox__intnet: true
+		aplication1.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
+		aplication1.vm.provider "virtualbox" do |vm|
+      vm.name = "App1"
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '512'
+							
+						]
+		end
+	end
+  
 end
