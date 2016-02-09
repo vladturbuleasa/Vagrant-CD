@@ -40,7 +40,7 @@ sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins/
 chkconfig jenkins on
 service jenkins restart
 iptables -P INPUT ACCEPT
-iptables -P OUTPUT ACCEPT
+iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
 SCRIPT
 
 $script_jenkinsSlave = <<SCRIPT
@@ -72,6 +72,7 @@ sed -i 's/#RUN_AS_USER=/RUN_AS_USER=nexus/g' /var/lib/nexus/bin/nexus
 chkconfig --add nexus
 chkconfig --levels 345 nexus on
 service nexus start
+iptables -P INPUT ACCEPT
 iptables -I INPUT -p tcp --dport 8081 -j ACCEPT
 SCRIPT
 
@@ -86,6 +87,7 @@ yum -y install gitlab-ce
 gitlab-ctl reconfigure
 #Credentials: root/5iveL!fe
 echo "Installing Git DONE..."
+iptables -P INPUT ACCEPT
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 SCRIPT
 
