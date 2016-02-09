@@ -91,6 +91,22 @@ iptables -P INPUT ACCEPT
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 SCRIPT
 
+$script_gradleInstall = <<SCRIPT
+echo "Install Gradle to machine..."
+gradle_version=2.11
+wget -nv -O /opt/gradle-${gradle_version}-all.zip https://services.gradle.org/distributions/gradle-${gradle_version}-all.zip
+unzip /opt/gradle-${gradle_version}-all.zip -d /opt/gradle
+ln -s /opt/gradle/gradle-${gradle_version} /opt/gradle/latest
+touch /etc/profile.d/gradle.sh
+echo "export GRADLE_HOME=/opt/gradle/latest\nexport PATH=\$PATH:\$GRADLE_HOME/bin" > /etc/profile.d/gradle.sh
+export GRADLE_HOME=/opt/gradle/latest
+export PATH=\$PATH:\$GRADLE_HOME/bin
+. /etc/profile.d/gradle.sh
+# check installation
+gradle -v
+echo "Gradle install finish..."
+SCRIPT
+
 #Provisioning the VM's
 Vagrant.configure("2") do |config|
   #Version of OS
@@ -119,6 +135,7 @@ Vagrant.configure("2") do |config|
 		jenkinsSlave.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		jenkinsSlave.vm.provision :shell, :inline => $script_tools
 		jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
+    jenkinsSlave.vm.provision :shell, :inline => $script_gradleInstall
 		jenkinsSlave.vm.network "private_network", ip: "172.16.1.3", virtualbox__intnet: true
 		jenkinsSlave.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
 		jenkinsSlave.vm.provider "virtualbox" do |vm|
