@@ -21,7 +21,8 @@ echo "Done."
 SCRIPT
 
 $script_jenkinsMaster = <<SCRIPT
-#Installing jenkins and java openjdk
+echo "Install Jenkins Master on machine..."
+#Installing jenkins
 wget -nv -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
 rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
 yum -y update
@@ -40,6 +41,7 @@ sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins/
 chkconfig jenkins on
 service jenkins restart
 service iptables stop
+echo "All Done, jenkins master is installed."
 SCRIPT
 
 $script_jenkinsSlave = <<SCRIPT
@@ -72,6 +74,7 @@ chkconfig --levels 345 nexus on
 service nexus start
 iptables -P INPUT ACCEPT
 iptables -I INPUT -p tcp --dport 8081 -j ACCEPT
+echo "Installation of Nexus Sonatype is done..."
 SCRIPT
 
 $script_gitInstall = <<SCRIPT
@@ -96,9 +99,9 @@ wget -nv -O /opt/gradle-${gradle_version}-all.zip https://services.gradle.org/di
 unzip /opt/gradle-${gradle_version}-all.zip -d /opt/gradle
 ln -s /opt/gradle/gradle-${gradle_version} /opt/gradle/latest
 touch /etc/profile.d/gradle.sh
-echo "export GRADLE_HOME=/opt/gradle/latest\nexport PATH=\$PATH:\$GRADLE_HOME/bin" > /etc/profile.d/gradle.sh
-export GRADLE_HOME=/opt/gradle/latest
-export PATH=$PATH:$GRADLE_HOME/bin
+echo 'export GRADLE_HOME=/opt/gradle/latest' >> /etc/profile.d/gradle.sh
+echo 'export PATH=$PATH:/opt/gradle/latest/bin' >> /etc/profile.d/gradle.sh
+chmod +x /etc/profile.d/gradle.sh
 . /etc/profile.d/gradle.sh
 # check installation
 gradle -v
@@ -114,9 +117,9 @@ wget -nv -O /opt/apache-maven-3.3.3-bin.tar.gz http://apache-mirror.rbc.ru/pub/a
 tar -xf apache-maven-3.3.3-bin.tar.gz -C /opt/maven/
 ln -s /opt/maven/apache-maven-3.3.3 /opt/maven/latest
 touch /etc/profile.d/maven.sh
-echo "export MAVEN_HOME=/opt/maven/latest\nexport PATH=$PATH:$MAVEN_HOME/bin" > /etc/profile.d/maven.sh
-export MAVEN_HOME=/opt/gradle/latest
-export PATH=$PATH:$MAVEN_HOME/bin
+echo 'export MAVEN_HOME=/opt/gradle/latest' >> /etc/profile.d/maven.sh
+echo 'export PATH=$PATH:/opt/maven/latest/bin' >> /etc/profile.d/maven.sh
+chmod +x /etc/profile.d/maven.sh
 . /etc/profile.d/maven.sh
 # check installation
 mvn -v
