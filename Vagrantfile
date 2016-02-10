@@ -126,12 +126,22 @@ mvn -v
 echo "Install done..."
 SCRIPT
 
+$script_installChef12 = <<SCRIPT
+curl -s https://packagecloud.io/install/repositories/chef/stable/script.rpm.sh | sudo bash
+yum -y install chef-server-core
+chef-server-ctl reconfigure
+mkdir -p /opt/chef-server
+sudo chef-server-ctl user-create --filename /opt/chef-server/vagrant.pem vagrant Vlad ENDAVA vlad.turbuleasa@endava.com vagrant
+sudo chef-server-ctl org-create ssh DevOps --association_user vagrant --filename /opt/chef-server/ssh.pem
+SCRIPT
+
 #Provisioning the VM's
 Vagrant.configure("2") do |config|
   #Version of OS
-	config.vm.box = "nrel/CentOS-6.7-x86_64"
+	#config.vm.box = "nrel/CentOS-6.7-x86_64"
 	
 	config.vm.define "jenkinsMaster" do |jenkinsMaster|
+    jenkinsMaster.vm.box = "nrel/CentOS-6.7-x86_64"
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
     jenkinsMaster.vm.provision :shell, :inline => $script_tools
     jenkinsMaster.vm.provision :shell, :inline => $script_jenkinsMaster
@@ -152,6 +162,7 @@ Vagrant.configure("2") do |config|
 	end
 	
 	config.vm.define "jenkinsSlave" do |jenkinsSlave|
+    jenkinsSlave.vm.box = "nrel/CentOS-6.7-x86_64"
 		jenkinsSlave.vm.hostname = "jenkinsSlave"
 		jenkinsSlave.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		jenkinsSlave.vm.provision :shell, :inline => $script_tools
@@ -171,7 +182,8 @@ Vagrant.configure("2") do |config|
 	end
 
 	config.vm.define "toolsVM" do |toolsVM|
-		toolsVM.vm.hostname = "nexus"
+    toolsVM.vm.box = "nrel/CentOS-6.7-x86_64"
+		toolsVM.vm.hostname = "toolsVM"
     toolsVM.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		toolsVM.vm.provision :shell, :inline => $script_tools
     toolsVM.vm.provision :shell, :inline => $script_nexusInstall
@@ -184,13 +196,19 @@ Vagrant.configure("2") do |config|
       vm.name = "toolsVM"
 			vm.customize [
 							'modifyvm', :id,
-							'--memory', '1536'
+							'--memory', '1280'
 							
 						]
 		end
 	end
   
+  
+  config.vm.define "chefServer" do |chefServer|
+     chefServer.vm.box = "ubuntu/trusty64"
+  end
+=begin
   config.vm.define "aplication1" do |aplication1|
+    aplication1.vm.box = "nrel/CentOS-6.7-x86_64"
 		aplication1.vm.hostname = "aplication1"
 		aplication1.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		aplication1.vm.network "private_network", ip: "172.16.1.5", virtualbox__intnet: true
@@ -204,5 +222,5 @@ Vagrant.configure("2") do |config|
 						]
 		end
 	end
-  
+=end
 end
