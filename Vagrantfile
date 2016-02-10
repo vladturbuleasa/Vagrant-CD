@@ -39,8 +39,7 @@ sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins/
 #setting up Jenkins as a service&start it
 chkconfig jenkins on
 service jenkins restart
-iptables -P INPUT ACCEPT
-iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
+service iptables stop
 SCRIPT
 
 $script_jenkinsSlave = <<SCRIPT
@@ -51,8 +50,7 @@ touch /var/lib/jenkins/jenkins.log
 wget -nv -O /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/2.0/swarm-client-2.0-jar-with-dependencies.jar
 echo 'nohup java -jar /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/lib/jenkins/jenkins.log 2>&1 &' >> /etc/rc.local
 nohup java -jar /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/lib/jenkins/jenkins.log 2>&1 &
-iptables -P INPUT ACCEPT
-iptables -P OUTPUT ACCEPT
+service iptables stop
 echo "Installing JenkinsSlave Done..."
 SCRIPT
 
@@ -100,11 +98,29 @@ ln -s /opt/gradle/gradle-${gradle_version} /opt/gradle/latest
 touch /etc/profile.d/gradle.sh
 echo "export GRADLE_HOME=/opt/gradle/latest\nexport PATH=\$PATH:\$GRADLE_HOME/bin" > /etc/profile.d/gradle.sh
 export GRADLE_HOME=/opt/gradle/latest
-export PATH=\$PATH:\$GRADLE_HOME/bin
+export PATH=$PATH:$GRADLE_HOME/bin
 . /etc/profile.d/gradle.sh
 # check installation
 gradle -v
+rm -rf /opt/*.zip
 echo "Gradle install finish..."
+SCRIPT
+
+$script_mvnInstall = <<SCRIPT
+echo "Install Maven 3 to machine..."
+cd /opt/
+mkdir -p /opt/maven/
+wget -nv -O /opt/apache-maven-3.3.3-bin.tar.gz http://apache-mirror.rbc.ru/pub/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+tar -xf apache-maven-3.3.3-bin.tar.gz -C /opt/maven/
+ln -s /opt/maven/apache-maven-3.3.3 /opt/maven/latest
+touch /etc/profile.d/maven.sh
+echo "export MAVEN_HOME=/opt/maven/latest\nexport PATH=$PATH:$MAVEN_HOME/bin" > /etc/profile.d/maven.sh
+export MAVEN_HOME=/opt/gradle/latest
+export PATH=$PATH:$MAVEN_HOME/bin
+. /etc/profile.d/maven.sh
+# check installation
+mvn -v
+echo "Install done..."
 SCRIPT
 
 #Provisioning the VM's
@@ -116,6 +132,8 @@ Vagrant.configure("2") do |config|
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
     jenkinsMaster.vm.provision :shell, :inline => $script_tools
     jenkinsMaster.vm.provision :shell, :inline => $script_jenkinsMaster
+    jenkinsMaster.vm.provision :shell, :inline => $script_gradleInstall
+    jenkinsMaster.vm.provision :shell, :inline => $script_mvnInstall
 		jenkinsMaster.vm.synced_folder ".", "/vagrant", disabled: true
 		jenkinsMaster.vm.network "private_network", ip: "172.16.1.2", virtualbox__intnet: true
 		jenkinsMaster.vm.network "forwarded_port", guest: 22, host: 2022, id: "ssh", auto_correct: true
@@ -136,6 +154,7 @@ Vagrant.configure("2") do |config|
 		jenkinsSlave.vm.provision :shell, :inline => $script_tools
 		jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
     jenkinsSlave.vm.provision :shell, :inline => $script_gradleInstall
+    jenkinsSlave.vm.provision :shell, :inline => $script_mvnInstall
 		jenkinsSlave.vm.network "private_network", ip: "172.16.1.3", virtualbox__intnet: true
 		jenkinsSlave.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
 		jenkinsSlave.vm.provider "virtualbox" do |vm|
