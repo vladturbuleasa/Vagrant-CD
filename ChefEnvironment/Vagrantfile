@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  
+	config.vm.define "chefServer" do |chefServer|
+     chefServer.vm.box = "ubuntu/trusty64"
+     chefServer.vm.hostname = "chef-server"
+     chefServer.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
+     chefServer.vm.provision :shell, :inline => $script_installChef12
+     chefServer.vm.network "private_network", ip: "172.16.1.5", virtualbox__intnet: true
+     chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
+     chefServer.vm.provider "virtualbox" do |vm|
+      vm.name = "chef-server"
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '2048'
+							
+						]
+		end
+  end
+
+end

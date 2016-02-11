@@ -129,13 +129,19 @@ echo "Install done..."
 SCRIPT
 
 $script_installChef12 = <<SCRIPT
-wget -nv -O /opt/chef-server-core_12.3.0-1_amd64.deb https://web-dl.packagecloud.io/chef/stable/packages/ubuntu/trusty/chef-server-core_12.3.0-1_amd64.deb
+echo "Install of Chef server started..."
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+echo "172.16.1.5 chef-server" >> /etc/hosts
 cd /opt/
+wget -nv -O /opt/chef-server-core_12.3.0-1_amd64.deb https://web-dl.packagecloud.io/chef/stable/packages/ubuntu/trusty/chef-server-core_12.3.0-1_amd64.deb
 dpkg -i chef-server*
 chef-server-ctl reconfigure
 mkdir -p /opt/chef-server
 sudo chef-server-ctl user-create --filename /opt/chef-server/vagrant.pem vagrant Vlad ENDAVA vlad.turbuleasa@endava.com vagrant
 sudo chef-server-ctl org-create ssh DevOps --association_user vagrant --filename /opt/chef-server/ssh.pem
+chef-server-ctl status
+chef-server-ctl test
+echo "Install of Chef server Done..."
 SCRIPT
 
 $script_installSonar = <<SCRIPT
@@ -215,23 +221,5 @@ Vagrant.configure("2") do |config|
 						]
 		end
 	end
-  
-  
-  config.vm.define "chefServer" do |chefServer|
-     chefServer.vm.box = "ubuntu/trusty64"
-     chefServer.vm.hostname = "chef-server"
-     chefServer.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
-     chefServer.vm.provision :shell, :inline => $script_installChef12
-     chefServer.vm.network "private_network", ip: "172.16.1.5", virtualbox__intnet: true
-     chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
-     chefServer.vm.provider "virtualbox" do |vm|
-      vm.name = "chef-server"
-			vm.customize [
-							'modifyvm', :id,
-							'--memory', '512'
-							
-						]
-		end
-  end
   
 end
