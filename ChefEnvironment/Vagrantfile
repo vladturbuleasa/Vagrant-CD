@@ -16,9 +16,12 @@ echo "Starting the installation onf chef-server-core..."
 dpkg -i chef-server*
 echo "Running the reconfigure command..."
 chef-server-ctl reconfigure
-echo "Testing Chef Server..."
+echo "Checking Chef Server..."
 chef-server-ctl status
-chef-server-ctl test
+echo "Creating users/keys..."
+mkdir -p /home/vturbuleasa
+chef-server-ctl user-create vturbuleasa Vlad Turbuleasa vlad.turbuleasa@endava.com '12345678' --filename /home/vturbuleasa/vturbuleasa.pem
+chef-server-ctl org-create short_name 'devOps' --association_user vturbuleasa --filename /home/vturbuleasa/devOps-validator.pem
 echo "Install of Chef server Done..."
 SCRIPT
 
