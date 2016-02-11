@@ -41,6 +41,7 @@ sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins/
 chkconfig jenkins on
 service jenkins restart
 service iptables stop
+chkconfig iptables off
 echo "All Done, jenkins master is installed."
 SCRIPT
 
@@ -53,6 +54,7 @@ wget -nv -O /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar http://m
 echo 'nohup java -jar /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/lib/jenkins/jenkins.log 2>&1 &' >> /etc/rc.local
 nohup java -jar /var/lib/jenkins/swarm-client-2.0-jar-with-dependencies.jar -master http://172.16.1.2:8080 > /var/lib/jenkins/jenkins.log 2>&1 &
 service iptables stop
+chkconfig iptables off
 echo "Installing JenkinsSlave Done..."
 SCRIPT
 
@@ -127,12 +129,22 @@ echo "Install done..."
 SCRIPT
 
 $script_installChef12 = <<SCRIPT
-curl -s https://packagecloud.io/install/repositories/chef/stable/script.rpm.sh | sudo bash
-yum -y install chef-server-core
+wget -nv -O /opt/chef-server-core_12.3.0-1_amd64.deb https://web-dl.packagecloud.io/chef/stable/packages/ubuntu/trusty/chef-server-core_12.3.0-1_amd64.deb
+cd /opt/
+dpkg -i chef-server*
 chef-server-ctl reconfigure
 mkdir -p /opt/chef-server
 sudo chef-server-ctl user-create --filename /opt/chef-server/vagrant.pem vagrant Vlad ENDAVA vlad.turbuleasa@endava.com vagrant
 sudo chef-server-ctl org-create ssh DevOps --association_user vagrant --filename /opt/chef-server/ssh.pem
+SCRIPT
+
+$script_installSonar = <<SCRIPT
+echo "Installing SonarQube server..."
+wget -O /etc/yum.repos.d/sonar.repo http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo
+yum -y install sonar
+service sonar start
+iptables -I INPUT -p tcp --dport 9000 -j ACCEPT
+echo "Installation of SonarQube is done..."
 SCRIPT
 
 #Provisioning the VM's
@@ -188,6 +200,7 @@ Vagrant.configure("2") do |config|
 		toolsVM.vm.provision :shell, :inline => $script_tools
     toolsVM.vm.provision :shell, :inline => $script_nexusInstall
     toolsVM.vm.provision :shell, :inline => $script_gitInstall
+    toolsVM.vm.provision :shell, :inline => $script_installSonar
 		toolsVM.vm.network "private_network", ip: "172.16.1.4", virtualbox__intnet: true
 		toolsVM.vm.network "forwarded_port", guest: 22, host: 4022, id: "ssh", auto_correct: true
     toolsVM.vm.network "forwarded_port", guest: 8081, host: 8081, id: "Nexus"
@@ -205,22 +218,19 @@ Vagrant.configure("2") do |config|
   
   config.vm.define "chefServer" do |chefServer|
      chefServer.vm.box = "ubuntu/trusty64"
-  end
-=begin
-  config.vm.define "aplication1" do |aplication1|
-    aplication1.vm.box = "nrel/CentOS-6.7-x86_64"
-		aplication1.vm.hostname = "aplication1"
-		aplication1.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
-		aplication1.vm.network "private_network", ip: "172.16.1.5", virtualbox__intnet: true
-		aplication1.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
-		aplication1.vm.provider "virtualbox" do |vm|
-      vm.name = "App1"
+     chefServer.vm.hostname = "chef-server"
+     chefServer.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
+     chefServer.vm.provision :shell, :inline => $script_installChef12
+     chefServer.vm.network "private_network", ip: "172.16.1.5", virtualbox__intnet: true
+     chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
+     chefServer.vm.provider "virtualbox" do |vm|
+      vm.name = "chef-server"
 			vm.customize [
 							'modifyvm', :id,
 							'--memory', '512'
 							
 						]
 		end
-	end
-=end
+  end
+  
 end
