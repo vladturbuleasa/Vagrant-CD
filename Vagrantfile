@@ -205,6 +205,7 @@ Vagrant.configure("2") do |config|
 		toolsVM.vm.network "forwarded_port", guest: 22, host: 4022, id: "ssh", auto_correct: true
     toolsVM.vm.network "forwarded_port", guest: 8081, host: 8081, id: "Nexus"
     toolsVM.vm.network "forwarded_port", guest: 80, host: 8181, id: "gitlabweb"
+    toolsVM.vm.network "forwarded_port", guest: 9000, host: 9000, id: "sonarQube"
 		toolsVM.vm.provider "virtualbox" do |vm|
       vm.name = "toolsVM"
 			vm.customize [
