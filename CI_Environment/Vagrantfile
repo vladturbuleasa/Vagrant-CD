@@ -130,7 +130,7 @@ SCRIPT
 
 $script_installSonar = <<SCRIPT
 echo "Installing SonarQube server..."
-wget -O /etc/yum.repos.d/sonar.repo http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo
+wget -nv -O /etc/yum.repos.d/sonar.repo http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo
 yum -y install sonar
 service sonar start
 iptables -I INPUT -p tcp --dport 9000 -j ACCEPT
@@ -165,10 +165,10 @@ Vagrant.configure("2") do |config|
     jenkinsMaster.vm.box = "nrel/CentOS-6.7-x86_64"
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
     jenkinsMaster.vm.provision :shell, :inline => $script_tools
+    jenkinsMaster.vm.provision :shell, :inline => $script_setupHosts
     jenkinsMaster.vm.provision :shell, :inline => $script_jenkinsMaster
     jenkinsMaster.vm.provision :shell, :inline => $script_gradleInstall
     jenkinsMaster.vm.provision :shell, :inline => $script_mvnInstall
-    jenkinsMaster.vm.provision :shell, :inline => $script_setupHosts
 		jenkinsMaster.vm.synced_folder ".", "/vagrant", disabled: true
 		jenkinsMaster.vm.network "private_network", ip: "192.168.56.2", virtualbox__hostonly: true
 		jenkinsMaster.vm.network "forwarded_port", guest: 22, host: 2022, id: "ssh", auto_correct: true
@@ -187,10 +187,10 @@ Vagrant.configure("2") do |config|
 		jenkinsSlave.vm.hostname = "jenkinsSlave"
 		jenkinsSlave.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		jenkinsSlave.vm.provision :shell, :inline => $script_tools
+    jenkinsSlave.vm.provision :shell, :inline => $script_setupHosts
 		jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
     jenkinsSlave.vm.provision :shell, :inline => $script_gradleInstall
     jenkinsSlave.vm.provision :shell, :inline => $script_mvnInstall
-    jenkinsSlave.vm.provision :shell, :inline => $script_setupHosts
 		jenkinsSlave.vm.network "private_network", ip: "192.168.56.3", virtualbox__hostonly: true
 		jenkinsSlave.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
 		jenkinsSlave.vm.provider "virtualbox" do |vm|
@@ -208,10 +208,10 @@ Vagrant.configure("2") do |config|
 		toolsVM.vm.hostname = "toolsVM"
     toolsVM.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		toolsVM.vm.provision :shell, :inline => $script_tools
+    toolsVM.vm.provision :shell, :inline => $script_setupHosts
     toolsVM.vm.provision :shell, :inline => $script_nexusInstall
     toolsVM.vm.provision :shell, :inline => $script_gitInstall
     toolsVM.vm.provision :shell, :inline => $script_installSonar
-    toolsVM.vm.provision :shell, :inline => $script_setupHosts
 		toolsVM.vm.network "private_network", ip: "192.168.56.4", virtualbox__hostonly: true
 		toolsVM.vm.network "forwarded_port", guest: 22, host: 4022, id: "ssh", auto_correct: true
 		toolsVM.vm.provider "virtualbox" do |vm|
