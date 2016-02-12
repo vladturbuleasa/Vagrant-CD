@@ -1,12 +1,16 @@
 # Graduates
 
 
-What's done here:
+#CI_Environment using CentOS 6.7:
 
-1. Start 6 VM using the Virtualbox and vagrant
-2. Install Jenkins master and 1 slave
-3. Install git on a VM
-4. Install nexus sonatype on a VM
-5. Install Chef server + 1 node
-6. Install Docker
-7. Install shadow
+1. Install a JenkinsMaster on VM with maven,gradel and all plugins needed
+2. Install a JenkinsSlave on VM with swarm plugin 
+3. Install a toolsVM where is installed: Gitlab server , Nexus Sonatype server and Sonar Qube server
+
+#Chef_Environment using Ubuntu 14.04 LTS/CentOS 6.7
+
+1. Install Chef Server 12 open source with GUI and chefDK on a Ubuntu 14.04 LTS/CentOS
+2. Setup 2 nodes for aplication - nodeApp1/nodeApp2
+
+#Docker/Shadow
+Not started.
