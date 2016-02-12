@@ -7,7 +7,7 @@ echo "Setting up hostname..."
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 mv /etc/hosts /etc/hosts.old
 touch /etc/hosts
-echo "172.16.1.5 chefServer" >> /etc/hosts
+echo "192.168.56.5 chefServer" >> /etc/hosts
 echo "127.0.0.1 localhost" >> /etc/hosts
 cd /opt/
 echo "Downloading chef from repo..."
