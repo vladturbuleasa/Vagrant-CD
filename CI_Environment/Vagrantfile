@@ -18,6 +18,24 @@ wget -nv \
 yum -y install jdk-8u74-linux-x64.rpm
 \rm -rf jdk-8u74-linux-x64.rpm
 echo "Done."
+echo "Setting up hostname..."
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+mv /etc/hosts /etc/hosts.old
+touch /etc/hosts
+echo "192.168.56.2 jenkinsMaster" >> /etc/hosts
+echo "192.168.56.3 jenkinsSlave" >> /etc/hosts
+echo "192.168.56.4 toolsVM" >> /etc/hosts
+echo "192.168.56.5 chefServer" >> /etc/hosts
+echo "192.168.56.6 appNode1" >> /etc/hosts
+echo "192.168.56.7 appNode2" >> /etc/hosts
+echo "127.0.0.1 localhost" >> /etc/hosts
+#Disable IPV6
+echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+#Allowing through firewall
+iptables -A INPUT -p tcp -m tcp --dport 4000 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+echo "Networking/Hosts setup done..."
 SCRIPT
 
 $script_jenkinsMaster = <<SCRIPT
@@ -137,27 +155,6 @@ iptables -I INPUT -p tcp --dport 9000 -j ACCEPT
 echo "Installation of SonarQube is done..."
 SCRIPT
 
-$script_setupHosts = <<SCRIPT
-echo "Setting up hostname..."
-echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-mv /etc/hosts /etc/hosts.old
-touch /etc/hosts
-echo "192.168.56.2 jenkinsMaster" >> /etc/hosts
-echo "192.168.56.3 jenkinsSlave" >> /etc/hosts
-echo "192.168.56.4 toolsVM" >> /etc/hosts
-echo "192.168.56.5 chefServer" >> /etc/hosts
-echo "192.168.56.6 appNode1" >> /etc/hosts
-echo "192.168.56.7 appNode2" >> /etc/hosts
-echo "127.0.0.1 localhost" >> /etc/hosts
-#Disable IPV6
-echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
-#Allowing through firewall
-iptables -A INPUT -p tcp -m tcp --dport 4000 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -p tcp -m tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -p tcp -m tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-echo "Networking/Hosts setup done..."
-SCRIPT
-
 #Provisioning the VM's
 Vagrant.configure("2") do |config|
 	
@@ -165,7 +162,6 @@ Vagrant.configure("2") do |config|
     jenkinsMaster.vm.box = "nrel/CentOS-6.7-x86_64"
 		jenkinsMaster.vm.hostname = "jenkinsMaster"
     jenkinsMaster.vm.provision :shell, :inline => $script_tools
-    jenkinsMaster.vm.provision :shell, :inline => $script_setupHosts
     jenkinsMaster.vm.provision :shell, :inline => $script_jenkinsMaster
     jenkinsMaster.vm.provision :shell, :inline => $script_gradleInstall
     jenkinsMaster.vm.provision :shell, :inline => $script_mvnInstall
@@ -187,7 +183,6 @@ Vagrant.configure("2") do |config|
 		jenkinsSlave.vm.hostname = "jenkinsSlave"
 		jenkinsSlave.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		jenkinsSlave.vm.provision :shell, :inline => $script_tools
-    jenkinsSlave.vm.provision :shell, :inline => $script_setupHosts
 		jenkinsSlave.vm.provision :shell, :inline => $script_jenkinsSlave
     jenkinsSlave.vm.provision :shell, :inline => $script_gradleInstall
     jenkinsSlave.vm.provision :shell, :inline => $script_mvnInstall
@@ -208,7 +203,6 @@ Vagrant.configure("2") do |config|
 		toolsVM.vm.hostname = "toolsVM"
     toolsVM.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
 		toolsVM.vm.provision :shell, :inline => $script_tools
-    toolsVM.vm.provision :shell, :inline => $script_setupHosts
     toolsVM.vm.provision :shell, :inline => $script_nexusInstall
     toolsVM.vm.provision :shell, :inline => $script_gitInstall
     toolsVM.vm.provision :shell, :inline => $script_installSonar
