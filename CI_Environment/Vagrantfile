@@ -74,8 +74,11 @@ sed -i 's/#RUN_AS_USER=/RUN_AS_USER=nexus/g' /var/lib/nexus/bin/nexus
 chkconfig --add nexus
 chkconfig --levels 345 nexus on
 service nexus start
-iptables -P INPUT ACCEPT
+echo "Setting up network..."
 iptables -I INPUT -p tcp --dport 8081 -j ACCEPT
+echo "Installing yum plugin..."
+yum -y install createrepo
+
 echo "Installation of Nexus Sonatype is done..."
 SCRIPT
 
@@ -90,7 +93,6 @@ yum -y install gitlab-ce
 gitlab-ctl reconfigure
 #Credentials: root/5iveL!fe
 echo "Installing Git DONE..."
-iptables -P INPUT ACCEPT
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 SCRIPT
 
