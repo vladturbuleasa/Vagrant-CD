@@ -86,11 +86,11 @@ sudo chef-server-ctl org-create devops "Endava Devops" -f /home/vagrant/chef-rep
 sudo chef-server-ctl user-create vagrant DevOps Vagrant vagrant@endava.com vagrant -f /home/vagrant/chef-repo/.chef/vagrant.pem
 chmod 600 /home/vagrant/chef-repo/.chef/*.pem
 sudo chef-server-ctl org-user-add devops vagrant --admin
+knife ssl fetch
+knife ssl check
 sudo chown -R vagrant:vagrant /home/vagrant
 ls -l /home/vagrant/chef-repo/.chef
 cd /home/vagrant/chef-repo
-knife ssl fetch
-knife ssl check
 knife client list
 echo "Workstation completed setup..."
 
