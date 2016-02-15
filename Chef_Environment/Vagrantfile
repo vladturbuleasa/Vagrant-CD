@@ -50,12 +50,50 @@ echo "Downloading ChefDK..."
 wget -nv -O /opt/chefdk_0.10.0-1_amd64.deb https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chefdk_0.10.0-1_amd64.deb
 echo "Installing ChefDK..."
 cd /opt; dpkg -i chefdk_0.10.0-1_amd64.deb
+touch /etc/profile.d/bash.sh
+echo 'eval "$(chef shell-init bash)"' >> /etc/profile.d/bash.sh
+which ruby
+echo "Installation of ChefDK done.."
 SCRIPT
 
 $script_installChefClientCentOS6 = <<SCRIPT
 echo "Installing chef client on CentOS 6.x ..."
 wget -nv -O /opt/chef-12.3.0-1.el6.x86_64.rpm https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-12.3.0-1.el6.x86_64.rpm
 rpm -ivh /opt/chef-12.3.0-1.el6.x86_64.rpm
+SCRIPT
+
+$script_setupWSChef = <<SCRIPT
+echo "Setting up chef workstation workspace..."
+mkdir -p /home/vagrant/chef-repo/.chef
+
+touch /home/vagrant/chef-repo/.chef/knife.rb
+echo "current_dir = File.dirname(__FILE__)" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "log_level                :info" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "log_location             STDOUT" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "node_name                'vagrant'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "client_key               '/home/vagrant/chef-repo/.chef/vagrant.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "validation_client_name   'chef-validator'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "validation_key           '/home/vagrant/chef-repo/.chef/DEVOPS-validator.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "chef_server_url          'https://chefServer/organizations/devops'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "cache_type               'BasicFile'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "cache_options( :path => '/home/vagrant/chef-repo/.chef/checksums' )" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "cookbook_path            ['/home/vagrant/chef-repo/.chef/../cookbooks']" >> /home/vagrant/chef-repo/.chef/knife.rb
+
+cd /home/vagrant
+chef generate app chef-repo
+
+sudo chef-server-ctl org-create devops "Endava Devops" -f /home/vagrant/chef-repo/.chef/DEVOPS-validator.pem
+sudo chef-server-ctl user-create vagrant DevOps Vagrant vagrant@endava.com vagrant -f /home/vagrant/chef-repo/.chef/vagrant.pem
+chmod 600 /home/vagrant/chef-repo/.chef/*.pem
+sudo chef-server-ctl org-user-add devops vagrant --admin
+sudo chown -R vagrant:vagrant /home/vagrant
+ls -l /home/vagrant/chef-repo/.chef
+cd /home/vagrant/chef-repo
+knife ssl fetch
+knife ssl check
+knife client list
+echo "Workstation completed setup..."
+
 SCRIPT
 
 Vagrant.configure("2") do |config|
@@ -68,6 +106,7 @@ Vagrant.configure("2") do |config|
      chefServer.vm.provision :shell, :inline => $script_installChef12
      chefServer.vm.provision :shell, :inline => $script_installChefGUI
      chefServer.vm.provision :shell, :inline => $script_installChefDK
+     chefServer.vm.provision :shell, :inline => $script_setupWSChef
      chefServer.vm.network "private_network", ip: "192.168.56.5", virtualbox__hostonly: true
      chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
      chefServer.vm.provider "virtualbox" do |vm|
@@ -81,7 +120,7 @@ Vagrant.configure("2") do |config|
   end
   
   config.vm.define "appNode1" do |appNode1|
-     appNode1.vm.box = "nrel/CentOS-6.7-x86_64"
+     appNode1.vm.box = "cjwelle/Centos-6.7-minimal"
      appNode1.vm.hostname = "appNode1"
      appNode1.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode1.vm.provision :shell, :inline => $script_setupHosts
@@ -99,7 +138,7 @@ Vagrant.configure("2") do |config|
   end
   
   config.vm.define "appNode2" do |appNode2|
-     appNode2.vm.box = "nrel/CentOS-6.7-x86_64"
+     appNode2.vm.box = "cjwelle/Centos-6.7-minimal"
      appNode2.vm.hostname = "appNode2"
      appNode2.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode2.vm.provision :shell, :inline => $script_setupHosts
