@@ -73,7 +73,7 @@ echo "log_location             STDOUT" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "node_name                'vagrant'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "client_key               '/home/vagrant/chef-repo/.chef/vagrant.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "validation_client_name   'chef-validator'" >> /home/vagrant/chef-repo/.chef/knife.rb
-echo "validation_key           '/home/vagrant/chef-repo/.chef/DEVOPS-validator.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "validation_key           '/home/vagrant/chef-repo/.chef/devops-validator.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "chef_server_url          'https://chefServer/organizations/devops'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "cache_type               'BasicFile'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "cache_options( :path => '/home/vagrant/chef-repo/.chef/checksums' )" >> /home/vagrant/chef-repo/.chef/knife.rb
@@ -82,7 +82,7 @@ echo "cookbook_path            ['/home/vagrant/chef-repo/.chef/../cookbooks']" >
 cd /home/vagrant
 chef generate app chef-repo
 
-sudo chef-server-ctl org-create devops "Endava Devops" -f /home/vagrant/chef-repo/.chef/DEVOPS-validator.pem
+sudo chef-server-ctl org-create devops "Endava Devops" -f /home/vagrant/chef-repo/.chef/devops-validator.pem
 sudo chef-server-ctl user-create vagrant DevOps Vagrant vagrant@endava.com vagrant -f /home/vagrant/chef-repo/.chef/vagrant.pem
 chmod 600 /home/vagrant/chef-repo/.chef/*.pem
 sudo chef-server-ctl org-user-add devops vagrant --admin
