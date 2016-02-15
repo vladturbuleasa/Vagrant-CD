@@ -72,11 +72,11 @@ echo "log_level                :info" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "log_location             STDOUT" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "node_name                'vagrant'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "client_key               '/home/vagrant/chef-repo/.chef/vagrant.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
-echo "validation_client_name   'chef-validator'" >> /home/vagrant/chef-repo/.chef/knife.rb
-echo "validation_key           '/home/vagrant/chef-repo/.chef/devops-validator.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "validation_client_name   'chef-validator'" >> /home/vagrant/knife.rb
+echo "validation_key           '\#{ENV[\"HOME\"]}/.chef/devops-validator.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "chef_server_url          'https://chefServer/organizations/devops'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "cache_type               'BasicFile'" >> /home/vagrant/chef-repo/.chef/knife.rb
-echo "cache_options( :path => '/home/vagrant/chef-repo/.chef/checksums' )" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "cache_options\( :path => '/home/vagrant/chef-repo/.chef/checksums'\)" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "cookbook_path            ['/home/vagrant/chef-repo/.chef/../cookbooks']" >> /home/vagrant/chef-repo/.chef/knife.rb
 
 cd /home/vagrant
@@ -84,40 +84,29 @@ chef generate app chef-repo
 
 sudo chef-server-ctl org-create devops "Endava Devops" -f /home/vagrant/chef-repo/.chef/devops-validator.pem
 sudo chef-server-ctl user-create vagrant DevOps Vagrant vagrant@endava.com vagrant -f /home/vagrant/chef-repo/.chef/vagrant.pem
-chmod 600 /home/vagrant/chef-repo/.chef/*.pem
+chmod 644 /home/vagrant/chef-repo/.chef/*.pem
 sudo chef-server-ctl org-user-add devops vagrant --admin
+
+cd /home/vagrant/chef-repo
 knife ssl fetch
 knife ssl check
+
 sudo chown -R vagrant:vagrant /home/vagrant
 ls -l /home/vagrant/chef-repo/.chef
+
 cd /home/vagrant/chef-repo
 knife client list
+
 echo "Workstation completed setup..."
+echo "Registering the nodes to chef-server..."
+cd /home/vagrant/chef-repo
+knife bootstrap 192.168.56.6 -x vagrant -P vagrant --sudo -N appNode1
+knife bootstrap 192.168.56.7 -x vagrant -P vagrant --sudo -N appNode2
+echo "All operations done for chef-server/chef-client/chef-workstation..."
 
 SCRIPT
 
 Vagrant.configure("2") do |config|
-  
-	config.vm.define "chefServer" do |chefServer|
-     chefServer.vm.box = "ubuntu/trusty64"
-     chefServer.vm.hostname = "chefServer"
-     chefServer.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
-     chefServer.vm.provision :shell, :inline => $script_setupHosts
-     chefServer.vm.provision :shell, :inline => $script_installChef12
-     chefServer.vm.provision :shell, :inline => $script_installChefGUI
-     chefServer.vm.provision :shell, :inline => $script_installChefDK
-     chefServer.vm.provision :shell, :inline => $script_setupWSChef
-     chefServer.vm.network "private_network", ip: "192.168.56.5", virtualbox__hostonly: true
-     chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
-     chefServer.vm.provider "virtualbox" do |vm|
-      vm.name = "ChefServer12"
-			vm.customize [
-							'modifyvm', :id,
-							'--memory', '2048'
-							
-						]
-		end
-  end
   
   config.vm.define "appNode1" do |appNode1|
      appNode1.vm.box = "cjwelle/Centos-6.7-minimal"
@@ -150,6 +139,27 @@ Vagrant.configure("2") do |config|
 			vm.customize [
 							'modifyvm', :id,
 							'--memory', '512'
+							
+						]
+		end
+  end
+  
+  config.vm.define "chefServer" do |chefServer|
+     chefServer.vm.box = "ubuntu/trusty64"
+     chefServer.vm.hostname = "chefServer"
+     chefServer.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
+     chefServer.vm.provision :shell, :inline => $script_setupHosts
+     chefServer.vm.provision :shell, :inline => $script_installChef12
+     chefServer.vm.provision :shell, :inline => $script_installChefGUI
+     chefServer.vm.provision :shell, :inline => $script_installChefDK
+     chefServer.vm.provision :shell, :inline => $script_setupWSChef
+     chefServer.vm.network "private_network", ip: "192.168.56.5", virtualbox__hostonly: true
+     chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
+     chefServer.vm.provider "virtualbox" do |vm|
+      vm.name = "ChefServer12"
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '2048'
 							
 						]
 		end
