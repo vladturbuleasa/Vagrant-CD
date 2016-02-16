@@ -42,6 +42,8 @@ chkconfig jenkins on
 service jenkins restart
 service iptables stop
 chkconfig iptables off
+echo "Setting up jenkins user for gitlab..."
+sed -i "s/jenkins:\/bin\/false/jenkins:\/bin\/bash/g" /etc/passwd
 echo "All Done, jenkins master is installed."
 SCRIPT
 
