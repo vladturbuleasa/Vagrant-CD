@@ -69,13 +69,16 @@ We will start with the CI_Environment , use the below steps to start the CI envi
 	cd CI_Environment
 	vagrant up
 for stopping the environment just:
+	vagrant halt	
+for removing the environment (just if it is requested)
 	vagrant destroy
-
 	
 To start the Chef Environment , please cd into the Chef_Environment folder and use the below steps:
 	cd Chef_Environment
 	vagrant up
 for stopping the environment just:
+	vagrant halt	
+for removing the environment (just if it is requested)
 	vagrant destroy
 	
 (!!!) NOTE: the CI_Environment would need up to 4 GB of your RAM memory and as well the Chef_Environment will need the same amount,
