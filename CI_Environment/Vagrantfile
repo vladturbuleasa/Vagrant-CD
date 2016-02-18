@@ -6,7 +6,7 @@ echo "Start installing tools..."
 #Allow all trafic trough ipotable
 sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 sudo sysctl -p
-sudo yum -y install net-tools wget zip unzip mc vim git
+sudo yum -y install net-tools wget zip unzip mc vim gitepel-release
 echo "Install oracle jdk..."
 #Install Oracle JDK
 wget -nv \
@@ -86,7 +86,7 @@ SCRIPT
 
 $script_gitInstall = <<SCRIPT
 echo "Installing Git..."
-yum -y install curl openssh-server openssh-clients postfix cronie
+yum -y install curl openssh-server openssh-clients postfix cronie 
 service postfix start
 chkconfig postfix on
 lokkit -s http -s ssh
@@ -95,7 +95,7 @@ yum -y install gitlab-ce
 gitlab-ctl reconfigure
 #Credentials: root/5iveL!fe
 echo "Installing Git DONE..."
-iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+service iptables stop
 SCRIPT
 
 $script_gradleInstall = <<SCRIPT

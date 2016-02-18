@@ -56,21 +56,20 @@ which ruby
 echo "Installation of ChefDK done.."
 SCRIPT
 
-$script_installChefClientCentOS6 = <<SCRIPT
-echo "Installing chef client on CentOS 6.x ..."
-wget -nv -O /opt/chef-12.3.0-1.el6.x86_64.rpm https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-12.3.0-1.el6.x86_64.rpm
-rpm -ivh /opt/chef-12.3.0-1.el6.x86_64.rpm
+$script_UbuntuTools =<<SCRIPT
+echo "Installing git on Ubuntu ..."
+export DEBIAN_FRONTEND=noninteractive
+apt-get -q -y install git
+echo "Git client installed..."
+
 SCRIPT
 
 $script_setupWSChef = <<SCRIPT
-echo "Installing git on Ubuntu for cookbooks..."
-
-export DEBIAN_FRONTEND=noninteractive
-apt-get -q -y install git
 
 echo "Setting up chef workstation workspace..."
 mkdir -p /home/vagrant/chef-repo/.chef
 
+echo "Setting up the knife.rb ..."
 touch /home/vagrant/chef-repo/.chef/knife.rb
 echo "current_dir = File.dirname(__FILE__)" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "log_level                :info" >> /home/vagrant/chef-repo/.chef/knife.rb
@@ -85,34 +84,42 @@ echo "cache_type               'BasicFile'" >> /home/vagrant/chef-repo/.chef/kni
 echo "cache_options\( :path => '/home/vagrant/chef-repo/.chef/checksums'\)" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "cookbook_path            ['/home/vagrant/chef-repo/.chef/../cookbooks']" >> /home/vagrant/chef-repo/.chef/knife.rb
 
+echo "Setup the chef-repo..."
 cd /home/vagrant
 chef generate app chef-repo
 
+echo "Setup the Organization and admin user... "
 sudo chef-server-ctl org-create devops "Endava Devops" -f /home/vagrant/chef-repo/.chef/devops-validator.pem
 sudo chef-server-ctl user-create vagrant DevOps Vagrant vagrant@endava.com vagrant -f /home/vagrant/chef-repo/.chef/vagrant.pem
 chmod 644 /home/vagrant/chef-repo/.chef/*.pem
 sudo chef-server-ctl org-user-add devops vagrant --admin
 
+echo "Fetching the SSL certificates... "
 cd /home/vagrant/chef-repo
 knife ssl fetch https://chefServer
 knife ssl check https://chefServer
 
+echo "Setting up the owner on .chef ..."
 sudo chown -R vagrant:vagrant /home/vagrant
 ls -l /home/vagrant/chef-repo/.chef
 
+echo "List of client on chef:"
 cd /home/vagrant/chef-repo
 knife client list
 
 echo "Workstation completed setup..."
-echo "Registering the nodes to chef-server..."
-cd /home/vagrant/chef-repo
-knife bootstrap 192.168.56.6 -x vagrant -P vagrant --sudo -N appNode1
-knife bootstrap 192.168.56.7 -x vagrant -P vagrant --sudo -N appNode2
-knife bootstrap toolsVM -N toolsVM -x vagrant -P vagrant --sudo --use-sudo-password
-
-
 echo "All operations done for chef-server/chef-client/chef-workstation..."
 
+SCRIPT
+
+$script_bootstrapNodes = <<SCRIPT
+echo "Registering the nodes to chef-server..."
+cd /home/vagrant/chef-repo
+knife bootstrap appNode1 -N appNode1 -x vagrant -P vagrant --sudo --use-sudo-password
+knife bootstrap appNode2 -N appNode2 -x vagrant -P vagrant --sudo --use-sudo-password
+echo "Registere nodes are below:"
+knife node list
+echo "Bootstrap operation done..."
 SCRIPT
 
 Vagrant.configure("2") do |config|
@@ -122,7 +129,6 @@ Vagrant.configure("2") do |config|
      appNode1.vm.hostname = "appNode1"
      appNode1.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode1.vm.provision :shell, :inline => $script_setupHosts
-     #appNode1.vm.provision :shell, :inline => $script_installChefClientCentOS6
      appNode1.vm.network "private_network", ip: "192.168.56.6", virtualbox__hostonly: true
      appNode1.vm.network "forwarded_port", guest: 22, host: 6022, id: "ssh", auto_correct: true
      appNode1.vm.provider "virtualbox" do |vm|
@@ -140,7 +146,6 @@ Vagrant.configure("2") do |config|
      appNode2.vm.hostname = "appNode2"
      appNode2.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode2.vm.provision :shell, :inline => $script_setupHosts
-     #appNode2.vm.provision :shell, :inline => $script_installChefClientCentOS6
      appNode2.vm.network "private_network", ip: "192.168.56.7", virtualbox__hostonly: true
      appNode2.vm.network "forwarded_port", guest: 22, host: 7022, id: "ssh", auto_correct: true
      appNode2.vm.provider "virtualbox" do |vm|
@@ -161,6 +166,7 @@ Vagrant.configure("2") do |config|
      chefServer.vm.provision :shell, :inline => $script_installChef12
      chefServer.vm.provision :shell, :inline => $script_installChefGUI
      chefServer.vm.provision :shell, :inline => $script_installChefDK
+     chefServer.vm.provision :shell, :inline => $script_UbuntuTools
      chefServer.vm.provision :shell, :inline => $script_setupWSChef
      chefServer.vm.network "private_network", ip: "192.168.56.5", virtualbox__hostonly: true
      chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
