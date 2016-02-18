@@ -69,6 +69,7 @@ mkdir -p /home/vagrant/chef-repo/.chef
 touch /home/vagrant/chef-repo/.chef/knife.rb
 echo "current_dir = File.dirname(__FILE__)" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "log_level                :info" >> /home/vagrant/chef-repo/.chef/knife.rb
+echo "ssl_verify_mode          :verify_none" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "log_location             STDOUT" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "node_name                'vagrant'" >> /home/vagrant/chef-repo/.chef/knife.rb
 echo "client_key               '/home/vagrant/chef-repo/.chef/vagrant.pem'" >> /home/vagrant/chef-repo/.chef/knife.rb
@@ -102,6 +103,9 @@ echo "Registering the nodes to chef-server..."
 cd /home/vagrant/chef-repo
 knife bootstrap 192.168.56.6 -x vagrant -P vagrant --sudo -N appNode1
 knife bootstrap 192.168.56.7 -x vagrant -P vagrant --sudo -N appNode2
+knife bootstrap toolsVM -N toolsVM -x vagrant -P vagrant --sudo --use-sudo-password
+
+
 echo "All operations done for chef-server/chef-client/chef-workstation..."
 
 SCRIPT
