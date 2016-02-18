@@ -63,6 +63,11 @@ rpm -ivh /opt/chef-12.3.0-1.el6.x86_64.rpm
 SCRIPT
 
 $script_setupWSChef = <<SCRIPT
+echo "Installing git on Ubuntu for cookbooks..."
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get -q -y install git
+
 echo "Setting up chef workstation workspace..."
 mkdir -p /home/vagrant/chef-repo/.chef
 
@@ -89,8 +94,8 @@ chmod 644 /home/vagrant/chef-repo/.chef/*.pem
 sudo chef-server-ctl org-user-add devops vagrant --admin
 
 cd /home/vagrant/chef-repo
-knife ssl fetch
-knife ssl check
+knife ssl fetch https://chefServer
+knife ssl check https://chefServer
 
 sudo chown -R vagrant:vagrant /home/vagrant
 ls -l /home/vagrant/chef-repo/.chef
