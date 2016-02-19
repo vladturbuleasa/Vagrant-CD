@@ -15,10 +15,13 @@ echo "192.168.56.7 appNode2" >> /etc/hosts
 echo "127.0.0.1 localhost" >> /etc/hosts
 #Disable IPV6
 echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+SCRIPT
+
+$script_disableRHFirewall = <<SCRIPT
 #Allowing through firewall
-iptables -A INPUT -p tcp -m tcp --dport 4000 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -p tcp -m tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -p tcp -m tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+echo "Allowing through firewall..."
+service iptables stop
+chkconfig iptables off
 echo "Networking/Hosts setup done..."
 SCRIPT
 
@@ -129,6 +132,7 @@ Vagrant.configure("2") do |config|
      appNode1.vm.hostname = "appNode1"
      appNode1.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode1.vm.provision :shell, :inline => $script_setupHosts
+     appNode1.vm.provision :shell, :inline => $script_disableRHFirewall
      appNode1.vm.network "private_network", ip: "192.168.56.6", virtualbox__hostonly: true
      appNode1.vm.network "forwarded_port", guest: 22, host: 6022, id: "ssh", auto_correct: true
      appNode1.vm.provider "virtualbox" do |vm|
@@ -146,6 +150,7 @@ Vagrant.configure("2") do |config|
      appNode2.vm.hostname = "appNode2"
      appNode2.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode2.vm.provision :shell, :inline => $script_setupHosts
+     appNode2.vm.provision :shell, :inline => $script_disableRHFirewall
      appNode2.vm.network "private_network", ip: "192.168.56.7", virtualbox__hostonly: true
      appNode2.vm.network "forwarded_port", guest: 22, host: 7022, id: "ssh", auto_correct: true
      appNode2.vm.provider "virtualbox" do |vm|
