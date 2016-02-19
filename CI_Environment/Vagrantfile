@@ -116,7 +116,7 @@ wget -nv -O /opt/apache-maven-3.3.3-bin.tar.gz http://apache-mirror.rbc.ru/pub/a
 tar -xf apache-maven-3.3.3-bin.tar.gz -C /opt/maven/
 ln -s /opt/maven/apache-maven-3.3.3 /opt/maven/latest
 touch /etc/profile.d/maven.sh
-echo 'export MAVEN_HOME=/opt/gradle/latest' >> /etc/profile.d/maven.sh
+echo 'export MAVEN_HOME=/opt/maven/latest' >> /etc/profile.d/maven.sh
 echo 'export PATH=$PATH:/opt/maven/latest/bin' >> /etc/profile.d/maven.sh
 chmod +x /etc/profile.d/maven.sh
 . /etc/profile.d/maven.sh
