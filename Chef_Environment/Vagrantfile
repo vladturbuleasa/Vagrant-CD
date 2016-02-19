@@ -121,6 +121,18 @@ echo "All operations done for chef-server/chef-client/chef-workstation..."
 
 SCRIPT
 
+$script_setupClientRB_on_node = <<SCRIPT
+echo "Setting up client.rb on nodes..."
+touch /etc/chef/client.rb
+echo 'log_location     STDOUT' >> /etc/chef/client.rb
+echo 'ssl_verify_mode          :verify_none' >> /etc/chef/client.rb
+echo 'chef_server_url  \"https://chefServer/organizations/devops\"' >> /etc/chef/client.rb
+echo 'validation_client_name \"devops-validator\"' >> /etc/chef/client.rb
+echo 'node_name \"jenkinsMaster\"' >> /etc/chef/client.rb
+echo 'trusted_certs_dir \"/etc/chef/trusted_certs\"' >> /etc/chef/client.rb
+echo "The client.rb setup is in place..."
+SCRIPT
+
 $script_bootstrapNodes = <<SCRIPT
 echo "Registering the nodes to chef-server..."
 cd /home/vagrant/chef-repo
@@ -140,6 +152,7 @@ Vagrant.configure("2") do |config|
      appNode1.vm.provision :shell, :inline => $script_setupHosts
      appNode1.vm.provision :shell, :inline => $script_disableRHFirewall
      appNode1.vm.provision :shell, :inline => $script_CentOSTools
+     appNode1.vm.provision :shell, :inline => $script_setupClientRB_on_node
      appNode1.vm.network "private_network", ip: "192.168.56.6", virtualbox__hostonly: true
      appNode1.vm.network "forwarded_port", guest: 22, host: 6022, id: "ssh", auto_correct: true
      appNode1.vm.provider "virtualbox" do |vm|
@@ -159,6 +172,7 @@ Vagrant.configure("2") do |config|
      appNode2.vm.provision :shell, :inline => $script_setupHosts
      appNode2.vm.provision :shell, :inline => $script_disableRHFirewall
      appNode2.vm.provision :shell, :inline => $script_CentOSTools
+     appNode2.vm.provision :shell, :inline => $script_setupClientRB_on_node
      appNode2.vm.network "private_network", ip: "192.168.56.7", virtualbox__hostonly: true
      appNode2.vm.network "forwarded_port", guest: 22, host: 7022, id: "ssh", auto_correct: true
      appNode2.vm.provider "virtualbox" do |vm|
