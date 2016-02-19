@@ -67,6 +67,12 @@ echo "Git client installed..."
 
 SCRIPT
 
+$script_CentOSTools = <<SCRIPT
+echo "Installing tools on CentOS.."
+yum -y install zip unzip mc epel-release
+echo "Tools installed!"
+SCRIPT
+
 $script_setupWSChef = <<SCRIPT
 
 echo "Setting up chef workstation workspace..."
@@ -133,6 +139,7 @@ Vagrant.configure("2") do |config|
      appNode1.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode1.vm.provision :shell, :inline => $script_setupHosts
      appNode1.vm.provision :shell, :inline => $script_disableRHFirewall
+     appNode1.vm.provision :shell, :inline => $script_CentOSTools
      appNode1.vm.network "private_network", ip: "192.168.56.6", virtualbox__hostonly: true
      appNode1.vm.network "forwarded_port", guest: 22, host: 6022, id: "ssh", auto_correct: true
      appNode1.vm.provider "virtualbox" do |vm|
@@ -151,6 +158,7 @@ Vagrant.configure("2") do |config|
      appNode2.vm.synced_folder ".", "/vagrant", type: "virtualbox", disabled: true
      appNode2.vm.provision :shell, :inline => $script_setupHosts
      appNode2.vm.provision :shell, :inline => $script_disableRHFirewall
+     appNode2.vm.provision :shell, :inline => $script_CentOSTools
      appNode2.vm.network "private_network", ip: "192.168.56.7", virtualbox__hostonly: true
      appNode2.vm.network "forwarded_port", guest: 22, host: 7022, id: "ssh", auto_correct: true
      appNode2.vm.provider "virtualbox" do |vm|
