@@ -36,6 +36,7 @@ wget -nv -O /var/lib/jenkins/plugins/ws-cleanup.hpi https://updates.jenkins-ci.o
 wget -nv -O /var/lib/jenkins/plugins/token-macro.hpi https://updates.jenkins-ci.org/download/plugins/token-macro/1.10/token-macro.hpi
 wget -nv -O /var/lib/jenkins/plugins/config-file-provider.hpi http://mirrors.xmission.com/hudson/plugins/config-file-provider/2.7.5/config-file-provider.hpi
 wget -nv -O /var/lib/jenkins/plugins/swarm.hpi https://updates.jenkins-ci.org/latest/swarm.hpi
+wget -nv -O /var/lib/jenkins/plugins/gradle.hpi https://updates.jenkins-ci.org/latest/gradle.hpi
 sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins/
 #setting up Jenkins as a service&start it
 chkconfig jenkins on
