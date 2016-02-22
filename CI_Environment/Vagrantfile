@@ -6,7 +6,7 @@ echo "Start installing tools..."
 #Allow all trafic trough ipotable
 sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 sudo sysctl -p
-sudo yum -y install net-tools wget zip unzip mc vim gitepel-release epel-release
+sudo yum -y install net-tools wget zip unzip mc vim gitepel-release epel-release rpm-build rpmdevtools
 echo "Install oracle jdk..."
 #Install Oracle JDK
 wget -nv \
