@@ -75,7 +75,8 @@ chkconfig --levels 345 nexus on
 service nexus start
 echo "Installing yum plugin..."
 yum -y install createrepo
-
+sudo /etc/init.d/iptables stop
+chkconfig iptables off
 echo "Installation of Nexus Sonatype is done..."
 SCRIPT
 
