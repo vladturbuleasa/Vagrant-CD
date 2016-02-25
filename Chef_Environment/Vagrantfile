@@ -123,6 +123,7 @@ SCRIPT
 
 $script_setupClientRB_on_node = <<SCRIPT
 echo "Setting up client.rb on nodes..."
+sudo mkdir -p /etc/chef
 touch /etc/chef/client.rb
 echo 'log_location     STDOUT' >> /etc/chef/client.rb
 echo 'ssl_verify_mode          :verify_none' >> /etc/chef/client.rb
