@@ -196,7 +196,6 @@ Vagrant.configure("2") do |config|
      chefServer.vm.provision :shell, :inline => $script_installChefDK
      chefServer.vm.provision :shell, :inline => $script_UbuntuTools
      chefServer.vm.provision :shell, :inline => $script_setupWSChef
-     chefServer.vm.provision :shell, :inline => $script_setupClientRB_on_node
      chefServer.vm.provision :shell, :inline => $script_bootstrapNodes
      chefServer.vm.network "private_network", ip: "192.168.56.5", virtualbox__hostonly: true
      chefServer.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
