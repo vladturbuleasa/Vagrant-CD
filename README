@@ -84,7 +84,7 @@ for removing the environment (just if it is requested)
 (!!!) NOTE: the CI_Environment would need up to 4 GB of your RAM memory and as well the Chef_Environment will need the same amount,
 Please don't start both environments at the same time.
 (!!!) NOTE: after installation of all things , you will need to setup : "ssl_verify_mode :verify_none" in the client.rb and knife.rb,
-as well don't forget to copy the devops-validator.pem and devops.pem to /etc/chef in chef server.
+as well don't forget to copy the devops-validator.pem (organization) and vagrant.pem (user) to /etc/chef in chef server.
 	
 	
 
