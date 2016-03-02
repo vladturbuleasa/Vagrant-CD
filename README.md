@@ -126,4 +126,4 @@ as well don't forget to copy the devops-validator.pem (organization) and vagrant
 
         <pre><code>cp /home/vagrant/.chef /home/vagrant/chef-repo/.chef</code></pre>
 
-**NOTE** - Please run all commands like knide cookbooks upload --all from /home/vagrant/chef-repo
+**NOTE** - Please run all commands like knife cookbooks upload --all from /home/vagrant/chef-repo
