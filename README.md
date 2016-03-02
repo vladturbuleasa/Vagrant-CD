@@ -103,7 +103,7 @@ for removing the environment (just if it is requested)
 	vagrant destroy
 </pre></code>
 	
-(!!!) NOTE: the CI_Environment would need up to 4 GB of your RAM memory and as well the Chef_Environment will need the same amount,
+(!!!) **NOTE** : the CI_Environment would need up to 4 GB of your RAM memory and as well the Chef_Environment will need the same amount,
 Please don't start both environments at the same time.
 (!!!) NOTE: after installation of all things , you will need to setup : "ssl_verify_mode :verify_none" in the client.rb and knife.rb,
 as well don't forget to copy the devops-validator.pem (organization) and vagrant.pem (user) to /etc/chef in chef server.
@@ -111,10 +111,10 @@ as well don't forget to copy the devops-validator.pem (organization) and vagrant
 
 ## How to get some of the cookbooks on the WorkStation 
 
-** NOTE ** 
+**NOTE** 
 - Keep in mind that the Chef WorkStation is setup on the Chef Server VM in order to reduce resources
 
-** Steps **
+**Steps**
 
 - Please iave the entire folder .chef from /home/vagrant/chef-repo/.chef under /home/vagrant
 - Remove the chef-repo folder 
@@ -126,4 +126,4 @@ as well don't forget to copy the devops-validator.pem (organization) and vagrant
 
         <pre><code>cp /home/vagrant/.chef /home/vagrant/chef-repo/.chef</code></pre>
 
-** NOTE ** - Please run all commands like knide cookbooks upload --all from /home/vagrant/chef-repo
+**NOTE** - Please run all commands like knide cookbooks upload --all from /home/vagrant/chef-repo
