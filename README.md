@@ -43,12 +43,12 @@ This training requires the below hardware:
 
 
 - Vagrant installation could be check by starting the bash command window and type: 
-	vagrant --version 
+	<pre><code>vagrant --version</code></pre>
 	should return the version , if this is not the case please check if it is installed correctly.
 - JDK 8 - check if this command is returning the path of JAVA_HOME:
-	echo %JAVA_HOME%
+	<pre><code>echo %JAVA_HOME%</code></pre>
 - git-bash - open the window and type:
-	git --version
+	<pre><code>git --version</code></pre>
 	it should return the version installed of git client.
 	
 
@@ -57,29 +57,51 @@ This training requires the below hardware:
 
 
 1. Open the git-bash window and type the commands below:
+<pre><code>
 	cd C:/<your>/<workspace>/<path>  example: cd C:/Users/Admin/vagrant-project/ 
 	git clone https://github.com/vladturbuleasa/POC.git
 	cd POC
 	ls -lt 
+</code></pre>
+
 you will see a structure of directories like below:
+<pre><code>
 drwxr-xr-x 1 vturbuleasa 1049089    0 Feb 16 17:19 Chef_Environment/
 drwxr-xr-x 1 vturbuleasa 1049089    0 Feb 16 17:19 CI_Environment/
+</code></pre>
 
 We will start with the CI_Environment , use the below steps to start the CI environment:
+<pre><code>
 	cd CI_Environment
 	vagrant up
+</code></pre>
+
 for stopping the environment just:
-	vagrant halt	
+<pre><code>
+	vagrant halt
+</code></pre>
+	
 for removing the environment (just if it is requested)
+<pre><code>
 	vagrant destroy
+</code></pre>
 	
 To start the Chef Environment , please cd into the Chef_Environment folder and use the below steps:
+<pre><code>
 	cd Chef_Environment
 	vagrant up
+</code></pre>
+
 for stopping the environment just:
-	vagrant halt	
+
+<pre><code>
+	vagrant halt
+</code></pre>
+	
 for removing the environment (just if it is requested)
+<pre><code>
 	vagrant destroy
+</pre></code>
 	
 (!!!) NOTE: the CI_Environment would need up to 4 GB of your RAM memory and as well the Chef_Environment will need the same amount,
 Please don't start both environments at the same time.
