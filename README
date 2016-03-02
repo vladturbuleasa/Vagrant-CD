@@ -1,21 +1,21 @@
 
-#CI_Environment using CentOS 6.7:
+## CI_Environment using CentOS 6.7:
 
 1. Install a JenkinsMaster on VM with maven,gradel and all plugins needed
 2. Install a JenkinsSlave on VM with swarm plugin 
 3. Install a toolsVM where is installed: Gitlab server , Nexus Sonatype server and Sonar Qube server
 
-#Chef_Environment using Ubuntu 14.04 LTS/CentOS 6.7
+## Chef_Environment using Ubuntu 14.04 LTS/CentOS 6.7
 
 1. Install Chef Server 12 open source with GUI and chefDK on a Ubuntu 14.04 LTS/CentOS
 2. Setup 2 nodes for aplication - nodeApp1/nodeApp2
 
-#Docker/Shadow
+## Docker/Shadow
 Not started.
 
-#####################################################
-######### System Requrements ########################
-#####################################################
+
+## System Requrements 
+
 
 This training requires the below hardware:
 
@@ -24,9 +24,9 @@ This training requires the below hardware:
 - HDD - minimum 50 GB of disk space (prefered SSD)
 - Network card
 
-#####################################################
-######### Software Requrements ######################
-#####################################################
+
+## Software Requrements
+
 
 - OS: Windows/MAC/Linux (prefered Windows)
 - Rights to perform admin/sudo commands
@@ -38,9 +38,9 @@ This training requires the below hardware:
 - git-bash client (if using windows) - https://git-scm.com/downloads
 - mRemoteNG tool or putty (as you wish , we recommand mRemoteNG and provide configuration for it - )
 
-#####################################################
-######### How to check software #####################
-#####################################################
+
+## How to check software
+
 
 - Vagrant installation could be check by starting the bash command window and type: 
 	vagrant --version 
@@ -52,9 +52,9 @@ This training requires the below hardware:
 	it should return the version installed of git client.
 	
 
-#####################################################
-#### How to proceed with starting the projects ######
-#####################################################
+
+## How to proceed with starting the projects
+
 
 1. Open the git-bash window and type the commands below:
 	cd C:/<your>/<workspace>/<path>  example: cd C:/Users/Admin/vagrant-project/ 
@@ -86,14 +86,13 @@ Please don't start both environments at the same time.
 (!!!) NOTE: after installation of all things , you will need to setup : "ssl_verify_mode :verify_none" in the client.rb and knife.rb,
 as well don't forget to copy the devops-validator.pem (organization) and vagrant.pem (user) to /etc/chef in chef server.
 	
-###############################################################
-#### How to get some of the cookbooks on the WorkStation ######
-###############################################################
 
-**NOTE** 
+## How to get some of the cookbooks on the WorkStation 
+
+** NOTE ** 
 - Keep in mind that the Chef WorkStation is setup on the Chef Server VM in order to reduce resources
 
-**Steps**
+** Steps **
 
 - Please iave the entire folder .chef from /home/vagrant/chef-repo/.chef under /home/vagrant
 - Remove the chef-repo folder 
@@ -105,4 +104,4 @@ as well don't forget to copy the devops-validator.pem (organization) and vagrant
 
         <pre><code>cp /home/vagrant/.chef /home/vagrant/chef-repo/.chef</code></pre>
 
-**NOTE** - Please run all commands like knide cookbooks upload --all from /home/vagrant/chef-repo
+** NOTE ** - Please run all commands like knide cookbooks upload --all from /home/vagrant/chef-repo
