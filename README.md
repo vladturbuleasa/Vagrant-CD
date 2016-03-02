@@ -56,7 +56,7 @@ This training requires the below hardware:
 ## How to proceed with starting the projects
 
 
-1. Open the git-bash window and type the commands below:
+Open the git-bash window and type the commands below:
 <pre><code>
 	cd C:/<your>/<workspace>/<path>  example: cd C:/Users/Admin/vagrant-project/ 
 	git clone https://github.com/vladturbuleasa/POC.git
