@@ -138,8 +138,8 @@ SCRIPT
 $script_bootstrapNodes = <<SCRIPT
 echo "Registering the nodes to chef-server..."
 cd /home/vagrant/chef-repo
-knife bootstrap appNode1 -N appNode1 -x vagrant -P vagrant --sudo --use-sudo-password
-knife bootstrap appNode2 -N appNode2 -x vagrant -P vagrant --sudo --use-sudo-password
+knife bootstrap appNode1 -N appNode1 -x vagrant -P vagrant --sudo --use-sudo-password --node-ssl-verify-mode none
+knife bootstrap appNode2 -N appNode2 -x vagrant -P vagrant --sudo --use-sudo-password --node-ssl-verify-mode none
 echo "Registere nodes are below:"
 knife node list
 echo "Bootstrap operation done..."
