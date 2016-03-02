@@ -86,8 +86,23 @@ Please don't start both environments at the same time.
 (!!!) NOTE: after installation of all things , you will need to setup : "ssl_verify_mode :verify_none" in the client.rb and knife.rb,
 as well don't forget to copy the devops-validator.pem (organization) and vagrant.pem (user) to /etc/chef in chef server.
 	
-	
+###################################################################
+#### How to get the some of the cookbooks on the WorkStation ######
+###################################################################
 
+*NOTE:* 
+- Keep in mind that the Chef WorkStation is setup on the Chef Server VM in order to reduce resources
 
+**Steps:**
 
+- Please iave the entire folder .chef from /home/vagrant/chef-repo/.chef under /home/vagrant
+- Remove the chef-repo folder 
+- Under the folder /home/vagrant type this command:
 
+	<pre><code>git clone https://github.com/vladturbuleasa/chef-repo.git </code></pre>
+
+- after the recipes are in place , copy back the .chef folder using the below command:
+
+        <pre><code>cp /home/vagrant/.chef /home/vagrant/chef-repo/.chef</code></pre>
+
+*NOTE* - Please run all commands like knide cookbooks upload --all from /home/vagrant/chef-repo
