@@ -1,23 +1,26 @@
 FROM centos
 
-MAINTAINER Vlad Turbuleasa-Jurje <vlad.turbuleasa@gmail.com>
+MAINTAINER Vlad Turbuleasa <vlad.turbuleasa@gmail.com>
 
-RUN yum -y update \
-	&& yum -y upgrade
+RUN rm -f /var/lib/rpm/__*
+RUN rpm --rebuilddb -v -v
 
-RUN yum -y install java-1.6.0-openjdk.x86_64
-RUN yum -y install wget 
-RUN wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
-RUN rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
-RUN yum clean all && yum -y update
+RUN rm -f /var/cache/yum/timedhosts.txt
+
+RUN yum clean all
+
+
+RUN yum -y install \
+        wget \
+        vim \
+        initscripts \
+        epel-release \
+        java-1.8.0-openjdk.x86_64
+
+RUN wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+RUN rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
 RUN yum -y install jenkins
-
-VOLUME /var/lib/jenkins
-ENV JENKINS_HOME /var/lib/jenkins
 
 EXPOSE 8080
 
-ADD run /usr/local/bin/run
-RUN chmod +x /usr/local/bin/run
-
-CMD /usr/loca/bin/run
+CMD /etc/alternatives/java -Dcom.sun.akuma.Daemon=daemonized -Djava.awt.headless=true -DJENKINS_HOME=/var/lib/jenkins -jar /usr/lib/jenkins/jenkins.war --logfile=/var/log/jenkins/jenkins.log --webroot=/var/cache/jenkins/war --httpPort=8080 --ajp13Port=8009 --debug=5 --handlerCountMax=100 --handlerCountMaxIdle=20
