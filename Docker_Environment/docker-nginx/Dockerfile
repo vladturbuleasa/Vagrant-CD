@@ -1,6 +1,6 @@
 FROM centos
 
-MAINTAINER Vlad Turbuleasa <vturbuleasa@endava.com>
+MAINTAINER Vlad Turbuleasa-Jurje <vlad.turbuleasa@gmail.com>
 
 RUN rm -f /var/cache/yum/timedhosts.txt
 RUN yum clean all
