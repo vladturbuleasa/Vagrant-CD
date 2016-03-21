@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+    #Provisioning the VM's
+    Vagrant.configure("2") do |config|
+
+    config.vm.define "dockerVM" do |dockerVM|
+        dockerVM.vm.box = "centos/7"
+        dockerVM.vm.hostname = "dockerVM"
+	dockerVM.vm.synced_folder ".", "/vagrant", disabled: true
+	dockerVM.vm.network "private_network", ip: "192.168.56.20", virtualbox__hostonly: true
+	dockerVM.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", auto_correct: true
+	dockerVM.vm.provider "virtualbox" do |vm|
+                vm.name = "dockerVM"
+			vm.customize [
+							'modifyvm', :id,
+							'--memory', '2048'
+							
+						]
+		end
+	end
+
+    end
