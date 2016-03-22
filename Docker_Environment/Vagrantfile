@@ -1,23 +1,63 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+
+$script_tools = <<SCRIPT
+echo "Start installing tools..."
+#Allow all trafic trough ipotable
+sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+sudo sysctl -p
+sudo yum -y install net-tools wget zip unzip mc vim gitepel-release epel-release rpm-build rpmdevtools git
+echo "Install oracle jdk..."
+#Install Oracle JDK
+wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u73-b02/jdk-8u73-linux-x64.rpm
+yum -y install jdk-8u74-linux-x64.rpm
+\rm -rf jdk-8u74-linux-x64.rpm
+echo "Done."
+
+
+
+SCRIPT
+
+$script_setupNetwork = <<SCRIPT
+echo "Setting up hostname..."
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+mv /etc/hosts /etc/hosts.old
+touch /etc/hosts
+echo "192.168.56.2 jenkinsMaster" >> /etc/hosts
+echo "192.168.56.3 jenkinsSlave" >> /etc/hosts
+echo "192.168.56.4 toolsVM" >> /etc/hosts
+echo "192.168.56.5 chefServer" >> /etc/hosts
+echo "192.168.56.6 appNode1" >> /etc/hosts
+echo "192.168.56.7 appNode2" >> /etc/hosts
+echo "127.0.0.1 localhost" >> /etc/hosts
+#Disable IPV6
+echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+#Disable frewall
+service iptables stop
+chkconfig iptables off
+echo "Networking/Hosts setup done..."
+SCRIPT
+
+
     #Provisioning the VM's
     Vagrant.configure("2") do |config|
 
     config.vm.define "dockerVM" do |dockerVM|
-        dockerVM.vm.box = "centos/7"
+        dockerVM.vm.box = "bento/centos-7.2"
         dockerVM.vm.hostname = "dockerVM"
-	dockerVM.vm.synced_folder ".", "/vagrant", disabled: true
-	dockerVM.vm.network "private_network", ip: "192.168.56.20", virtualbox__hostonly: true
-	dockerVM.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", auto_correct: true
-	dockerVM.vm.provider "virtualbox" do |vm|
+        dockerVM.vm.provision :shell, :inline => $script_tools
+        dockerVM.vm.provision :shell, :inline => $script_setupNetwork
+        dockerVM.vm.synced_folder '.', '/vagrant', :disabled => true
+        dockerVM.vm.network "forwarded_port", guest: 22, host: 2322, id: "ssh", auto_correct: true
+        dockerVM.vm.network "private_network", ip: "192.168.56.20", virtualbox__hostonly: true
+        dockerVM.vm.provider "virtualbox" do |vm|
                 vm.name = "dockerVM"
-			vm.customize [
+                vm.customize [
 							'modifyvm', :id,
 							'--memory', '2048'
 							
 						]
 		end
 	end
-
-    end
+end
