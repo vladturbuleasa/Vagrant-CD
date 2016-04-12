@@ -1,0 +1,5 @@
+## YAML Template.
+---
+- hosts: nginx
+  tasks:
+        - include: 'tasks/install_nginx.yml'

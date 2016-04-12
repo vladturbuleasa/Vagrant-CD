@@ -1,2 +1,126 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+
+$install_tools = <<SCRIPT
+echo "Setting up DNS..."
+mv /etc/resolv.conf /etc/resolv.conf.old
+touch /etc/resolv.conf
+echo "nameserver 193.231.252.1" >> /etc/resolv.conf
+echo "nameserver 213.154.124.1" >> /etc/resolv.conf
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+
+echo "Starting clean all..."
+yum clean all
+
+echo "Starting update ..."
+yum -y update
+
+echo "Starting installing all vim,zip,unzip,mc,selinux..."
+yum -y install vim zip unzip mc 
+
+echo "All done..."
+SCRIPT
+
+$install_RHELansible = <<SCRIPT
+echo "Install ansible on provisioning machine..."
+yum -y install ansible
+mv /etc/ansible/hosts /etc/ansible/hosts.old
+touch /etc/ansible/hosts
+echo "[haproxy]" >> /etc/ansible/hosts
+echo "10.1.1.5" >> /etc/ansible/hosts
+echo "[tomcat]" >> /etc/ansible/hosts
+echo "10.1.1.3" >> /etc/ansible/hosts
+echo "10.1.1.4" >> /etc/ansible/hosts
+echo "[RHEL]" >> /etc/ansible/hosts
+echo "10.1.1.3" >> /etc/ansible/hosts
+echo "10.1.1.5" >> /etc/ansible/hosts
+echo "[DEB]" >> /etc/ansible/hosts
+echo "10.1.1.4" >> /etc/ansible/hosts
+touch /root/.ssh/config
+echo "Host *" >> /root/.ssh/config
+echo "StrictHostKeyChecking no" >> /root/.ssh/config
+echo "UserKnownHostsFile /dev/null" >> /root/.ssh/config
+touch /root/.ssh/config
+echo "Host *" >> /home/vagrant/.ssh/config
+echo "StrictHostKeyChecking no" >> /home/vagrant/.ssh/config
+echo "UserKnownHostsFile /dev/null" >> /home/vagrant/.ssh/config
+
+SCRIPT
+
+$install_RHELansibleGuest = <<SCRIPT
+yum clean all
+echo "Starting installing selinux..."
+yum -y install libselinux-python
+echo "Setup ssh..."
+echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  
+  config.vm.define "ansibleVM" do |ansibleVM|
+    ansibleVM.vm.box = "cjwelle/Centos-6.7-minimal"
+    ansibleVM.vm.hostname= "ansibleVM"
+    ansibleVM.vm.provision :shell, :inline => $install_tools
+    ansibleVM.vm.provision :shell, :inline => $install_RHELansible
+    ansibleVM.vm.synced_folder ".", "/vagrant", disabled: true
+		ansibleVM.vm.network "private_network", ip: "10.1.1.2", virtualbox__hostonly: true
+    ansibleVM.vm.network "forwarded_port", guest: 22, host: 2022, id: "ssh", auto_correct: true
+    ansibleVM.vm.provider "virtualbox" do |vm|
+       vm.name = "ansibleVM"
+       vm.customize [
+          'modifyvm', :id,
+          '--memory', '1024'			
+        ]
+    end
+  end
+  
+  config.vm.define "deployVM" do |deployVM|
+    deployVM.vm.box = "cjwelle/Centos-6.7-minimal"
+    deployVM.vm.hostname= "deployVM"
+    deployVM.vm.provision :shell, :inline => $install_tools
+    deployVM.vm.provision :shell, :inline => $install_RHELansibleGuest
+    deployVM.vm.synced_folder ".", "/vagrant", disabled: true
+		deployVM.vm.network "private_network", ip: "10.1.1.3", virtualbox__hostonly: true
+    deployVM.vm.network "forwarded_port", guest: 22, host: 3022, id: "ssh", auto_correct: true
+    deployVM.vm.provider "virtualbox" do |vm|
+       vm.name = "deployVM"
+       vm.customize [
+          'modifyvm', :id,
+          '--memory', '1024'			
+        ]
+    end
+  end
+  
+  config.vm.define "deployUbuntu" do |deployUB|
+    deployUB.vm.box = "ubuntu/trusty64"
+    deployUB.vm.hostname = "deployUbuntu"
+    deployUB.vm.synced_folder ".", "/vagrant", disabled: true
+    deployUB.vm.network "private_network", ip: "10.1.1.4", virtualbox__hostonly: true
+    deployUB.vm.network "forwarded_port", guest: 22, host: 4022, id: "ssh", auto_correct: true
+    deployUB.vm.provider "virtualbox" do |vm|
+        vm.name = "deployUB"
+        vm.customize [
+          'modifyvm', :id,
+          '--memory', '1024'
+        ]
+    end
+  end
+  
+  config.vm.define "haproxyVM" do |haproxyVM|
+    haproxyVM.vm.box = "cjwelle/Centos-6.7-minimal"
+    haproxyVM.vm.hostname= "haproxyVM"
+    haproxyVM.vm.provision :shell, :inline => $install_tools
+    haproxyVM.vm.provision :shell, :inline => $install_RHELansibleGuest
+    haproxyVM.vm.synced_folder ".", "/vagrant", disabled: true
+		haproxyVM.vm.network "private_network", ip: "10.1.1.5", virtualbox__hostonly: true
+    haproxyVM.vm.network "forwarded_port", guest: 22, host: 5022, id: "ssh", auto_correct: true
+    haproxyVM.vm.provider "virtualbox" do |vm|
+       vm.name = "haproxyVM"
+       vm.customize [
+          'modifyvm', :id,
+          '--memory', '1024'			
+        ]
+    end
+  end
+  
+end
