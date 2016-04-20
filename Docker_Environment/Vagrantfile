@@ -5,7 +5,7 @@
 $script_tools = <<SCRIPT
 echo "Start installing tools..."
 #Allow all trafic trough ipotable
-sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+#sudo echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 sudo sysctl -p
 sudo yum -y install net-tools wget zip unzip mc vim gitepel-release epel-release rpm-build rpmdevtools git
 echo "Install oracle jdk..."
@@ -46,6 +46,9 @@ curl -fsSL https://get.docker.com/ | sh
 sudo usermod -aG docker vagrant
 systemctl start docker
 systemctl enable docker.service
+echo "Installing docker-compose..."
+curl -L https://github.com/docker/compose/releases/download/1.7.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
 SCRIPT
 
     #Provisioning the VM's
@@ -64,7 +67,7 @@ SCRIPT
                 vm.name = "dockerVM"
                 vm.customize [
 							'modifyvm', :id,
-							'--memory', '2048'
+							'--memory', '3072'
 							
 						]
 		end
